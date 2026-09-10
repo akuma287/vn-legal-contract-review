@@ -1,0 +1,9 @@
+.worktrees/
+.venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+uploads/
+.env
+
+# Ponytail: local-only MVP, no upload persistence.
