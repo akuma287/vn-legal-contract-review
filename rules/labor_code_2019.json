@@ -1,0 +1,98 @@
+{
+  "rule_pack_version": "0.1.0",
+  "source": {
+    "instrument": "Bộ luật Lao động 2019",
+    "number": "45/2019/QH14",
+    "effective_from": "2021-01-01",
+    "url": "https://vbpl.vn/TW/Pages/vbpqen-toanvan.aspx?ItemID=11135"
+  },
+  "disclaimer": "Kết quả là sàng lọc sơ bộ dựa trên dấu hiệu văn bản. Không phải tư vấn pháp lý, kết luận tuân thủ, hay xác nhận hợp đồng có hiệu lực.",
+  "required_content_rules": [
+    {
+      "id": "BLLD2019-ART21-EMPLOYER",
+      "title": "Cần kiểm tra thông tin người sử dụng lao động",
+      "legal_basis": "Điều 21 khoản 1 điểm a Bộ luật Lao động 2019",
+      "keywords": ["người sử dụng lao động", "công ty", "địa chỉ", "đại diện"],
+      "missing_facts": ["Tên, địa chỉ người sử dụng lao động và người có thẩm quyền giao kết"],
+      "recommendation": "Đối chiếu bản gốc để xác nhận thông tin chủ thể và thẩm quyền ký."
+    },
+    {
+      "id": "BLLD2019-ART21-EMPLOYEE",
+      "title": "Cần kiểm tra thông tin người lao động",
+      "legal_basis": "Điều 21 khoản 1 điểm b Bộ luật Lao động 2019",
+      "keywords": ["người lao động", "ngày sinh", "căn cước", "cccd", "nơi cư trú"],
+      "missing_facts": ["Họ tên, ngày sinh, giới tính, nơi cư trú và giấy tờ định danh của người lao động"],
+      "recommendation": "Đối chiếu bản gốc để xác nhận thông tin định danh người lao động."
+    },
+    {
+      "id": "BLLD2019-ART21-WORK",
+      "title": "Cần kiểm tra công việc",
+      "legal_basis": "Điều 21 khoản 1 điểm c Bộ luật Lao động 2019",
+      "keywords": ["công việc", "chức danh", "vị trí"],
+      "missing_facts": ["Công việc"],
+      "recommendation": "Đối chiếu mô tả công việc trong bản gốc."
+    },
+    {
+      "id": "BLLD2019-ART21-WORKPLACE",
+      "title": "Cần kiểm tra địa điểm làm việc",
+      "legal_basis": "Điều 21 khoản 1 điểm c Bộ luật Lao động 2019",
+      "keywords": ["địa điểm làm việc", "làm việc tại", "nơi làm việc"],
+      "missing_facts": ["Địa điểm làm việc"],
+      "recommendation": "Đối chiếu địa điểm thực hiện công việc trong bản gốc."
+    },
+    {
+      "id": "BLLD2019-ART21-DURATION",
+      "title": "Cần kiểm tra thời hạn hợp đồng",
+      "legal_basis": "Điều 21 khoản 1 điểm d Bộ luật Lao động 2019",
+      "keywords": ["thời hạn", "từ ngày", "đến ngày", "tháng"],
+      "missing_facts": ["Thời hạn hợp đồng"],
+      "recommendation": "Đối chiếu ngày bắt đầu, ngày kết thúc và loại hợp đồng trong bản gốc."
+    },
+    {
+      "id": "BLLD2019-ART21-WAGES",
+      "title": "Cần kiểm tra nội dung tiền lương",
+      "legal_basis": "Điều 21 khoản 1 điểm đ Bộ luật Lao động 2019",
+      "keywords": ["mức lương", "tiền lương", "lương cơ bản", "vnđ", "vnd", "phụ cấp"],
+      "missing_facts": ["Mức lương, hình thức và thời hạn trả lương, phụ cấp và khoản bổ sung"],
+      "recommendation": "Đối chiếu mức lương và cơ chế chi trả trong bản gốc."
+    },
+    {
+      "id": "BLLD2019-ART21-PAY-RAISE",
+      "title": "Cần kiểm tra chế độ nâng bậc, nâng lương",
+      "legal_basis": "Điều 21 khoản 1 điểm e Bộ luật Lao động 2019",
+      "keywords": ["nâng bậc", "nâng lương", "xét tăng lương"],
+      "missing_facts": ["Chế độ nâng bậc, nâng lương"],
+      "recommendation": "Xác định điều khoản áp dụng hoặc văn bản nội bộ được dẫn chiếu."
+    },
+    {
+      "id": "BLLD2019-ART21-WORK-REST",
+      "title": "Cần kiểm tra thời giờ làm việc và nghỉ ngơi",
+      "legal_basis": "Điều 21 khoản 1 điểm g Bộ luật Lao động 2019",
+      "keywords": ["thời giờ làm việc", "giờ làm việc", "nghỉ ngơi", "ngày nghỉ"],
+      "missing_facts": ["Thời giờ làm việc và thời giờ nghỉ ngơi"],
+      "recommendation": "Đối chiếu lịch làm việc, thời giờ nghỉ và quy chế liên quan."
+    },
+    {
+      "id": "BLLD2019-ART21-INSURANCE",
+      "title": "Cần kiểm tra nội dung bảo hiểm bắt buộc",
+      "legal_basis": "Điều 21 khoản 1 điểm i Bộ luật Lao động 2019",
+      "keywords": ["bảo hiểm xã hội", "bhxh", "bảo hiểm y tế", "bhyt", "bảo hiểm thất nghiệp", "bhtn"],
+      "missing_facts": ["Bảo hiểm xã hội, bảo hiểm y tế và bảo hiểm thất nghiệp"],
+      "recommendation": "Đối chiếu đối tượng, mức đóng và trách nhiệm đóng theo bản gốc."
+    },
+    {
+      "id": "BLLD2019-ART21-TRAINING",
+      "title": "Cần kiểm tra đào tạo và nâng cao kỹ năng nghề",
+      "legal_basis": "Điều 21 khoản 1 điểm k Bộ luật Lao động 2019",
+      "keywords": ["đào tạo", "bồi dưỡng", "nâng cao trình độ", "kỹ năng nghề"],
+      "missing_facts": ["Đào tạo, bồi dưỡng, nâng cao trình độ và kỹ năng nghề"],
+      "recommendation": "Xác định điều khoản áp dụng hoặc văn bản nội bộ được dẫn chiếu."
+    }
+  ],
+  "duration_rule": {
+    "id": "BLLD2019-ART20-FIXED-TERM",
+    "title": "Cần kiểm tra thời hạn hợp đồng xác định",
+    "legal_basis": "Điều 20 khoản 1 điểm b Bộ luật Lao động 2019",
+    "recommendation": "Đối chiếu loại hợp đồng, thời hạn ghi nhận và ngoại lệ áp dụng trước khi đưa ra kết luận."
+  }
+}
