@@ -13,7 +13,7 @@ Mở http://127.0.0.1:8000.
 
 ## AI review
 
-AI review là tùy chọn. Chỉ tick checkbox khi được phép gửi toàn bộ nội dung hợp đồng và Authorization key tới external provider qua HTTP không mã hóa.
+AI review là tùy chọn. Trước khi gửi đến AI, app che PII dạng SĐT, CCCD, email và mã số thuế bằng placeholder như `{{PHONE_NUMBER_1}}`. Tên người/địa chỉ chưa được che trong MVP regex-only.
 
 ```bash
 cp .env.example .env

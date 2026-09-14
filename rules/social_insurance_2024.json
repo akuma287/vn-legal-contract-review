@@ -1,0 +1,21 @@
+{
+  "rule_pack_version": "0.1.0",
+  "source": {
+    "instrument": "Luật Bảo hiểm xã hội 2024",
+    "number": "41/2024/QH15",
+    "effective_from": "2025-07-01",
+    "url": "https://vbpl.vn/van-ban/chi-tiet/luat-bao-hiem-xa-hoi-2024-so-41-2024-qh15-172507"
+  },
+  "presence_review_rules": [
+    {
+      "id": "BHXH2024-COMPULSORY-WAGE-BASE",
+      "domain": "Bảo hiểm xã hội",
+      "title": "Cần kiểm tra mức lương làm căn cứ đóng BHXH",
+      "legal_basis": "Luật Bảo hiểm xã hội 2024 — quy định về tiền lương làm căn cứ đóng bảo hiểm xã hội bắt buộc",
+      "triggers": ["hợp đồng lao động", "người lao động", "lương", "tiền lương", "gross", "net"],
+      "required_keywords": ["bảo hiểm xã hội", "bhxh", "mức đóng", "tiền lương làm căn cứ", "bảo hiểm y tế", "bảo hiểm thất nghiệp"],
+      "missing_facts": ["Mức lương làm căn cứ đóng BHXH/BHYT/BHTN", "Thời điểm bắt đầu đóng", "Trách nhiệm đóng của mỗi bên"],
+      "recommendation": "Hỏi rõ mức lương làm căn cứ đóng BHXH/BHYT/BHTN và thời điểm bắt đầu đóng."
+    }
+  ]
+}

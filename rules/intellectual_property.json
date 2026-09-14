@@ -1,0 +1,21 @@
+{
+  "rule_pack_version": "0.1.0",
+  "source": {
+    "instrument": "Luật Sở hữu trí tuệ",
+    "number": "50/2005/QH11, được sửa đổi bổ sung",
+    "effective_from": "2006-07-01",
+    "url": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=16710"
+  },
+  "presence_review_rules": [
+    {
+      "id": "IP2005-WORK-CREATED-ASSET",
+      "domain": "Sở hữu trí tuệ",
+      "title": "Cần kiểm tra quyền sở hữu với sản phẩm tạo ra trong quá trình làm việc",
+      "legal_basis": "Luật Sở hữu trí tuệ — quyền tác giả/quyền tài sản và thỏa thuận về giao nhiệm vụ/hợp đồng",
+      "triggers": ["sở hữu trí tuệ", "quyền tác giả", "tác phẩm", "mã nguồn", "source code", "sáng chế", "bí mật kinh doanh", "tài sản trí tuệ", "nội dung"],
+      "required_keywords": ["quyền nhân thân", "quyền tài sản", "phạm vi chuyển giao", "thù lao", "portfolio", "sử dụng lại", "sau khi chấm dứt"],
+      "missing_facts": ["Loại tài sản trí tuệ thuộc công ty", "Phạm vi chuyển giao quyền tài sản", "Quyền dùng làm portfolio/sử dụng lại", "Nghĩa vụ sau khi nghỉ việc"],
+      "recommendation": "Hỏi rõ quyền nào chuyển cho công ty, quyền nào người lao động giữ lại, phạm vi/thời hạn sử dụng và quyền dùng làm portfolio."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: vn-legal-contract-review
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: LEGAL_AI_TIMEOUT_SECONDS
+        value: "600"
+      - key: LEGAL_AI_BASE_URL
+        sync: false
+      - key: LEGAL_AI_MODEL
+        sync: false
+      - key: LEGAL_AI_API_KEY
+        sync: false

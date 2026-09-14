@@ -1,0 +1,21 @@
+{
+  "rule_pack_version": "0.1.0",
+  "source": {
+    "instrument": "Luật Thuế thu nhập cá nhân",
+    "number": "04/2007/QH12, được sửa đổi bổ sung",
+    "effective_from": "2009-01-01",
+    "url": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=15083"
+  },
+  "presence_review_rules": [
+    {
+      "id": "PIT2007-GROSS-NET-WITHHOLDING",
+      "domain": "Thuế thu nhập cá nhân",
+      "title": "Cần kiểm tra lương gross/net và khấu trừ thuế TNCN",
+      "legal_basis": "Luật Thuế thu nhập cá nhân — thu nhập từ tiền lương, tiền công và khấu trừ/khai nộp thuế",
+      "triggers": ["lương", "tiền lương", "gross", "net", "thu nhập", "thưởng", "phụ cấp"],
+      "required_keywords": ["thuế thu nhập cá nhân", "tncn", "khấu trừ", "quyết toán thuế"],
+      "missing_facts": ["Lương ghi theo gross hay net", "Ai chịu/khấu trừ thuế TNCN", "Cách xử lý phụ cấp, thưởng và quyết toán thuế"],
+      "recommendation": "Hỏi rõ lương gross/net, cơ chế khấu trừ thuế TNCN, và cách tính thuế cho thưởng/phụ cấp."
+    }
+  ]
+}

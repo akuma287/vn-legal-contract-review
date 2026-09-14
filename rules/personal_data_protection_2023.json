@@ -1,0 +1,21 @@
+{
+  "rule_pack_version": "0.1.0",
+  "source": {
+    "instrument": "Nghị định bảo vệ dữ liệu cá nhân",
+    "number": "13/2023/NĐ-CP",
+    "effective_from": "2023-07-01",
+    "url": "https://vanban.chinhphu.vn/?pageid=27160&docid=207243"
+  },
+  "presence_review_rules": [
+    {
+      "id": "PDPD2023-EMPLOYEE-CUSTOMER-DATA",
+      "domain": "Dữ liệu cá nhân",
+      "title": "Cần kiểm tra điều khoản xử lý dữ liệu cá nhân",
+      "legal_basis": "Nghị định 13/2023/NĐ-CP — nguyên tắc xử lý dữ liệu cá nhân, thông báo/đồng ý và bảo vệ dữ liệu cá nhân",
+      "triggers": ["dữ liệu cá nhân", "thông tin cá nhân", "cccd", "căn cước", "khách hàng", "nhân viên", "camera", "sinh trắc", "tài khoản ngân hàng"],
+      "required_keywords": ["mục đích xử lý", "phạm vi xử lý", "thời hạn lưu trữ", "đồng ý", "bên xử lý dữ liệu", "chuyển dữ liệu", "xóa dữ liệu"],
+      "missing_facts": ["Mục đích và phạm vi xử lý dữ liệu", "Thời hạn lưu trữ", "Bên nhận/chuyển dữ liệu", "Quy trình rút đồng ý/xóa dữ liệu"],
+      "recommendation": "Hỏi rõ dữ liệu nào được thu thập/xử lý, mục đích, thời hạn lưu, bên nhận và quyền rút đồng ý/xóa dữ liệu."
+    }
+  ]
+}
