@@ -90,6 +90,8 @@ class AppTests(unittest.TestCase):
         self.assertIn("Căn cứ pháp lý đang dùng", html)
         self.assertIn("Bộ luật Lao động 2019", html)
         self.assertIn("Luật Bảo hiểm xã hội 2024", html)
+        self.assertIn("Nguồn: CSDL văn bản pháp luật", html)
+        self.assertNotIn("Nguồn chính thức</a>", html)
         self.assertNotIn("<h2>Rule checks</h2>", html)
         self.assertNotIn("BLLD2019-ART21-WAGES", html)
 

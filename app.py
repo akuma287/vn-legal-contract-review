@@ -468,7 +468,7 @@ def render_report(
         "<li>"
         f"{html.escape(source['instrument'])} ({html.escape(source['number'])}), "
         f"hiệu lực từ {html.escape(source['effective_from'])}. "
-        f"<a href='{html.escape(source['url'], quote=True)}' rel='noopener noreferrer' target='_blank'>Nguồn chính thức</a>"
+        "Nguồn: CSDL văn bản pháp luật."
         "</li>"
         for source in sources
     )
