@@ -111,6 +111,7 @@ class AppTests(unittest.TestCase):
 
     def test_local_origin_and_cli_without_origin_are_accepted(self):
         validate_request_origin("http://127.0.0.1:8000", "127.0.0.1:8000")
+        validate_request_origin("https://vn-legal-contract-review.onrender.com", "vn-legal-contract-review.onrender.com")
         validate_request_origin("", "127.0.0.1:8000")
 
     def test_extract_contract_text_rejects_invalid_extension(self):

@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from io import BytesIO
 from pathlib import Path
 from typing import Any
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -554,8 +554,10 @@ def render_home(error: str | None = None) -> str:
 
 
 def validate_request_origin(origin: str, host: str) -> None:
-    """Reject browser POSTs from another origin; allow local CLI requests without Origin."""
-    if origin and origin.rstrip("/") != f"http://{host}":
+    """Reject browser POSTs from another host; allow local CLI requests without Origin."""
+    if not origin:
+        return
+    if urlparse(origin).netloc != host:
         raise ValueError("Origin không được phép.")
 
 
