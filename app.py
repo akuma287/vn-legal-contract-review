@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import html
 import json
 import os
@@ -17,7 +18,15 @@ from urllib.parse import parse_qs, urlparse
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from docx import Document
 from pypdf import PdfReader
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 from pii_masking import mask_pii
 from screening import screen_text
@@ -46,6 +55,22 @@ FORBIDDEN_AI_TERMS = (
 )
 
 
+def _register_pdf_font() -> str:
+    for font_path in (
+        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/Library/Fonts/Arial Unicode.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ):
+        if Path(font_path).is_file():
+            pdfmetrics.registerFont(TTFont("ContractReport", font_path))
+            return "ContractReport"
+    return "Helvetica"
+
+
+PDF_FONT = _register_pdf_font()
+
+
 def _load_local_env() -> None:
     """Load simple KEY=VALUE pairs from ignored local .env without overwrite."""
     env_path = Path(__file__).with_name(".env")
@@ -61,20 +86,21 @@ def _load_local_env() -> None:
 
 
 def extract_contract_text(filename: str, content: bytes) -> str:
-    """Extract UTF-8 text or text-layer PDF content without persistence."""
-    if not filename or Path(filename).suffix.casefold() not in {".txt", ".pdf"}:
-        raise ValueError("Chỉ nhận tệp TXT hoặc PDF.")
+    """Extract UTF-8 text, text-layer PDF, or DOCX content without persistence."""
+    suffix = Path(filename).suffix.casefold() if filename else ""
+    if suffix not in {".txt", ".pdf", ".docx"}:
+        raise ValueError("Chỉ nhận tệp TXT, PDF hoặc DOCX.")
     if not content:
         raise ValueError("Tệp tải lên trống.")
     if len(content) > MAX_UPLOAD_BYTES:
         raise ValueError("Tệp vượt quá giới hạn 2 MiB.")
 
-    if Path(filename).suffix.casefold() == ".txt":
+    if suffix == ".txt":
         try:
             text = content.decode("utf-8")
         except UnicodeDecodeError as error:
             raise ValueError("Tệp TXT phải dùng mã hóa UTF-8.") from error
-    else:
+    elif suffix == ".pdf":
         try:
             reader = PdfReader(BytesIO(content), strict=False)
             if reader.is_encrypted:
@@ -84,10 +110,93 @@ def extract_contract_text(filename: str, content: bytes) -> str:
             raise
         except Exception as error:
             raise ValueError("Không đọc được PDF. Chỉ hỗ trợ PDF có lớp văn bản.") from error
+    else:
+        try:
+            document = Document(BytesIO(content))
+            parts = [paragraph.text for paragraph in document.paragraphs]
+            for table in document.tables:
+                for row in table.rows:
+                    parts.append("\t".join(cell.text for cell in row.cells))
+            text = "\n".join(part for part in parts if part.strip())
+        except Exception as error:
+            raise ValueError("Không đọc được DOCX.") from error
 
     if not text.strip():
         raise ValueError("Không tìm thấy lớp văn bản trong tệp. OCR chưa được hỗ trợ.")
     return text
+
+
+def _pdf_text(value: object) -> str:
+    return html.escape(str(value or "")).replace("\n", "<br/>")
+
+
+def make_report_pdf(
+    result: dict[str, Any],
+    filename: str,
+    ai_review: dict[str, Any] | None = None,
+) -> bytes:
+    """Build a simple text PDF report; not a pixel clone of the web UI."""
+    stream = BytesIO()
+    styles = getSampleStyleSheet()
+    normal = styles["BodyText"]
+    normal.fontName = PDF_FONT
+    normal.leading = 13
+    heading = styles["Heading2"]
+    heading.fontName = PDF_FONT
+    heading.textColor = colors.HexColor("#5f2e18")
+    styles["Title"].fontName = PDF_FONT
+    story: list[Any] = [Paragraph("Kết quả rà soát sơ bộ", styles["Title"])]
+    story.append(Paragraph(f"Tệp: {_pdf_text(filename)}", normal))
+    story.append(Paragraph(_pdf_text(result["disclaimer"]), normal))
+    story.append(Spacer(1, 5 * mm))
+    story.append(Paragraph("Căn cứ pháp lý đang dùng", heading))
+    for source in result.get("sources", [result["source"]]):
+        story.append(
+            Paragraph(
+                f"- {_pdf_text(source['instrument'])} ({_pdf_text(source['number'])}), hiệu lực từ {_pdf_text(source['effective_from'])}.",
+                normal,
+            )
+        )
+    story.append(Spacer(1, 5 * mm))
+
+    if ai_review:
+        story.append(Paragraph("AI review — sơ bộ", heading))
+        story.append(Paragraph(_pdf_text(ai_review["summary"]), normal))
+        for finding in ai_review["findings"]:
+            story.append(Paragraph(f"Cần kiểm tra: {_pdf_text(finding['title'])}", heading))
+            story.append(Paragraph(_pdf_text(finding["issue"]), normal))
+        questions = ai_review.get("clarifying_questions") or []
+        if questions:
+            story.append(Paragraph("Câu hỏi cần làm rõ trước khi ký", heading))
+            for question in questions:
+                story.append(Paragraph(f"- {_pdf_text(question['question'])}", normal))
+    else:
+        story.append(Paragraph("Điểm cần kiểm tra từ rule engine", heading))
+        for finding in result["findings"][:25]:
+            story.append(Paragraph(_pdf_text(finding["title"]), heading))
+            story.append(Paragraph(_pdf_text(finding["recommendation"]), normal))
+
+    SimpleDocTemplate(
+        stream,
+        pagesize=A4,
+        leftMargin=18 * mm,
+        rightMargin=18 * mm,
+        topMargin=18 * mm,
+        bottomMargin=18 * mm,
+    ).build(story)
+    return stream.getvalue()
+
+
+def _pdf_download_link(
+    result: dict[str, Any],
+    filename: str,
+    ai_review: dict[str, Any] | None,
+) -> str:
+    encoded = base64.b64encode(make_report_pdf(result, filename, ai_review)).decode("ascii")
+    return (
+        "<a class='button-link' download='contract-review-report.pdf' "
+        f"href='data:application/pdf;base64,{encoded}'>Tải báo cáo PDF</a>"
+    )
 
 
 def _allowed_citations(deterministic_result: dict[str, Any]) -> dict[str, str]:
@@ -480,6 +589,7 @@ def render_report(
         "<p class='eyebrow'>Báo cáo cục bộ</p>"
         "<h1>Kết quả rà soát sơ bộ</h1>"
         f"<p class='lead'><b>Tệp:</b> {html.escape(filename)}</p>"
+        f"<p>{_pdf_download_link(result, filename, ai_review)}</p>"
         "<div class='stats'>"
         f"<div><b>{finding_count}</b><span>điểm rule engine</span></div>"
         f"<div><b>{ai_count}</b><span>điểm AI bổ sung</span></div>"
@@ -510,7 +620,7 @@ def _page(title: str, body: str) -> str:
 body{{font:16px/1.55 ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);margin:0;background:radial-gradient(circle at 18% 0%,#fff7ed 0,#f6f0e8 34%,#f8fafc 100%);padding:32px 18px;overflow-x:hidden}}
 a{{color:var(--accent-strong);text-underline-offset:3px}} h1,h2,h3,p{{margin-top:0}} h1{{font-size:clamp(2.2rem,6vw,4.8rem);letter-spacing:-.06em;line-height:.95;margin-bottom:18px}} h2{{font-size:1.35rem;letter-spacing:-.02em}} h3{{line-height:1.25;margin-bottom:.55rem}} code{{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;color:#7c2d12;background:#fff7ed;border:1px solid #fed7aa;border-radius:999px;padding:4px 8px}}
 .shell{{max-width:1120px;margin:0 auto}} .hero,.panel{{background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow)}} .hero{{display:grid;grid-template-columns:minmax(0,1.1fr) 360px;gap:28px;padding:34px}} .hero.compact{{display:block}} .eyebrow,.section-heading p{{color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.12em;font-size:.75rem;margin-bottom:.55rem}} .lead{{font-size:1.08rem;color:#475569;max-width:62ch}} .hero-card,.card{{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;max-width:100%;overflow-wrap:anywhere}} .hero-card{{align-self:stretch}} .trust-list{{display:grid;gap:12px;margin:18px 0 0;padding:0;list-style:none}} .trust-list li{{background:#fffaf4;border:1px solid #f1dfcf;border-radius:16px;padding:12px 14px}}
-.upload{{display:grid;gap:16px;margin-top:22px}} label{{display:block;font-weight:700}} .hint,small{{display:block;color:var(--muted);font-weight:500;margin-top:6px}} input[type=file],textarea{{width:100%;margin-top:10px;border:1px dashed #c9b6a3;border-radius:18px;background:#fffbf7;padding:16px;color:var(--ink)}} .check{{display:flex;gap:12px;align-items:flex-start;border:1px solid #f1dfcf;background:#fffaf4;border-radius:18px;padding:15px;line-height:1.45}} .check input{{margin-top:4px;min-width:18px;min-height:18px}} button{{min-height:46px;border:0;border-radius:999px;background:var(--accent-strong);color:white;font:800 1rem/1 ui-sans-serif,system-ui,sans-serif;padding:0 22px;cursor:pointer}} button:focus-visible,a:focus-visible,input:focus-visible{{outline:3px solid #f59e0b;outline-offset:3px}} .error{{color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:16px;padding:12px 14px}}
+.upload{{display:grid;gap:16px;margin-top:22px}} label{{display:block;font-weight:700}} .hint,small{{display:block;color:var(--muted);font-weight:500;margin-top:6px}} input[type=file],textarea{{width:100%;margin-top:10px;border:1px dashed #c9b6a3;border-radius:18px;background:#fffbf7;padding:16px;color:var(--ink)}} .check{{display:flex;gap:12px;align-items:flex-start;border:1px solid #f1dfcf;background:#fffaf4;border-radius:18px;padding:15px;line-height:1.45}} .check input{{margin-top:4px;min-width:18px;min-height:18px}} button,.button-link{{min-height:46px;border:0;border-radius:999px;background:var(--accent-strong);color:white;font:800 1rem/1 ui-sans-serif,system-ui,sans-serif;padding:0 22px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}} button:focus-visible,a:focus-visible,input:focus-visible{{outline:3px solid #f59e0b;outline-offset:3px}} .error{{color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:16px;padding:12px 14px}}
 #loading-overlay{{display:none;position:fixed;inset:0;z-index:999;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);place-items:center;text-align:center;color:white;padding:24px}} body.is-loading #loading-overlay{{display:grid}} body.is-loading .shell{{filter:blur(2px);opacity:.45;pointer-events:none}} #loading-overlay .box{{background:rgba(95,46,24,.92);border:1px solid rgba(255,255,255,.25);border-radius:24px;padding:28px;max-width:420px;box-shadow:0 24px 70px rgba(0,0,0,.22)}} #loading-overlay b{{display:block;font-size:1.35rem;margin-bottom:8px}}
 .chat-log{{max-height:460px;overflow-y:auto;border:1px solid var(--line);border-radius:22px;background:#fffaf4;padding:14px;display:grid;gap:12px;scroll-behavior:smooth}} .chat-message{{margin:0}}
 .panel{{padding:26px;margin-top:18px}} .section-heading{{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}} .section-heading h2,.section-heading p{{margin-bottom:0}} .stats{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}} .stats div{{border:1px solid var(--line);border-radius:18px;background:#fffaf4;padding:16px}} .stats b{{display:block;font-size:1.7rem;letter-spacing:-.04em}} .stats span{{display:block;color:var(--muted)}} aside{{background:#eff6ff;border:1px solid #bfdbfe;border-radius:18px;padding:16px;color:#1e3a8a}} .finding{{margin-top:14px}} .finding-top{{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}} .badge{{display:inline-flex;align-items:center;min-height:28px;border-radius:999px;background:#ffedd5;color:#9a3412;font-weight:800;font-size:.82rem;padding:4px 10px}} .list-block{{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px}} .list-block ul,.questions ol{{margin-bottom:0}} .empty{{color:var(--muted)}} .source-panel p{{margin-bottom:0}} .back-link{{display:inline-flex;margin-bottom:16px;font-weight:700}} .questions{{margin-top:18px;border-top:1px solid var(--line);padding-top:18px}}
@@ -531,7 +641,7 @@ def render_home(error: str | None = None) -> str:
         "<section>"
         "<p class='eyebrow'>VN Contract Review</p>"
         "<h1>Rà soát sơ bộ hợp đồng</h1>"
-        "<p class='lead'>Upload TXT/PDF text layer. Rule engine chạy cục bộ, không lưu tệp hay nội dung hợp đồng.</p>"
+        "<p class='lead'>Upload TXT/PDF/DOCX. Rule engine chạy cục bộ, không lưu tệp hay nội dung hợp đồng.</p>"
         "<ul class='trust-list'>"
         "<li><b>Local-only mặc định.</b> File chỉ nằm trong request hiện tại.</li>"
         "<li><b>Không kết luận pháp lý.</b> Kết quả chỉ là danh sách cần kiểm tra.</li>"
@@ -542,9 +652,9 @@ def render_home(error: str | None = None) -> str:
         "<h2>Tải hợp đồng</h2>"
         f"{error_html}"
         "<form class='upload' action='/screen' method='post' enctype='multipart/form-data'>"
-        "<label>Tệp hợp đồng TXT UTF-8 hoặc PDF text-based, tối đa 2 MiB"
-        "<span class='hint'>Hỗ trợ .txt và .pdf có lớp văn bản. OCR/DOCX chưa nằm trong MVP.</span>"
-        "<input required name='contract' type='file' accept='.txt,.pdf,text/plain,application/pdf'></label>"
+        "<label>Tệp hợp đồng TXT UTF-8, PDF text-based hoặc DOCX, tối đa 2 MiB"
+        "<span class='hint'>Hỗ trợ .txt, .pdf có lớp văn bản và .docx. OCR/.doc chưa nằm trong MVP.</span>"
+        "<input required name='contract' type='file' accept='.txt,.pdf,.docx,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document'></label>"
         "<label class='check'><input name='ai_consent' type='checkbox' value='yes'> "
         f"<span><b>Dùng AI review sơ bộ.</b> {html.escape(disclosure)}</span></label>"
         "<button type='submit'>Rà soát</button></form>"
@@ -584,6 +694,9 @@ def _parse_multipart(content_type: str, body: bytes) -> tuple[str, bytes, bool]:
 
 class ScreeningHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
+        if self.path == "/healthz":
+            self._send_text(200, "ok")
+            return
         if self.path != "/":
             self.send_error(404)
             return
@@ -638,6 +751,15 @@ class ScreeningHandler(BaseHTTPRequestHandler):
         encoded = content.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(encoded)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(encoded)
+
+    def _send_text(self, status: int, content: str) -> None:
+        encoded = content.encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
         self.send_header("Content-Length", str(len(encoded)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()

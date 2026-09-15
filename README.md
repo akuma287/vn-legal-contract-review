@@ -31,8 +31,9 @@ Không commit `.env`. Key từng xuất hiện trong chat phải rotate trước
 
 ## Phạm vi hiện tại
 
-- TXT UTF-8 và PDF có text layer, tối đa 2 MiB.
+- TXT UTF-8, PDF có text layer và DOCX, tối đa 2 MiB.
 - Không lưu file hay text hợp đồng.
+- Có nút tải báo cáo PDF đơn giản từ kết quả hiện tại; không pixel-perfect theo web UI.
 - Rule pack nền: chủ thể/thẩm quyền, thanh toán, chấm dứt, tranh chấp.
 - Rule pack chuyên đề: hợp đồng lao động, dịch vụ, hợp tác, BHXH, thuế TNCN, dữ liệu cá nhân, sở hữu trí tuệ.
 - Hợp đồng có thể match nhiều pack; ví dụ hợp tác cung cấp dịch vụ chạy cả hợp tác và dịch vụ.
@@ -40,7 +41,7 @@ Không commit `.env`. Key từng xuất hiện trong chat phải rotate trước
 
 ## Không có
 
-DOCX, OCR, authentication, database, RAG/vector DB, embeddings, report PDF, telemetry, legal conclusion.
+DOC legacy, OCR, authentication, database, RAG/vector DB, embeddings, PDF pixel-perfect, telemetry, legal conclusion.
 
 Kết quả không phải tư vấn pháp lý, không xác nhận tuân thủ, vi phạm, có hiệu lực, vô hiệu, hay hợp pháp.
 

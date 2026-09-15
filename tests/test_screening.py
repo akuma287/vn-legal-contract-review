@@ -3,19 +3,23 @@ import unittest
 from io import BytesIO
 from unittest.mock import patch
 
-from pypdf import PdfWriter
+from docx import Document
+from pypdf import PdfReader, PdfWriter
 
 from app import (
     CHAT_SESSIONS,
+    ScreeningHandler,
     chat_with_ai,
     create_chat_session,
     extract_contract_text,
+    make_report_pdf,
     render_chat_page,
     render_home,
     render_report,
     review_with_ai,
     validate_request_origin,
 )
+from pii_masking import mask_pii
 from screening import screen_text
 
 
@@ -103,6 +107,21 @@ class ScreeningTests(unittest.TestCase):
 
 
 class AppTests(unittest.TestCase):
+    def test_mask_pii_masks_bank_account_address_and_labeled_names(self):
+        text = (
+            "Bên A: Nguyễn Văn A, địa chỉ: 12 Nguyễn Huệ, phường Bến Nghé, quận 1, TP.HCM. "
+            "Số tài khoản: 012345678901 tại Vietcombank."
+        )
+
+        result = mask_pii(text)
+
+        self.assertNotIn("Nguyễn Văn A", result.masked_text)
+        self.assertNotIn("12 Nguyễn Huệ", result.masked_text)
+        self.assertNotIn("012345678901", result.masked_text)
+        self.assertIn("PERSON_NAME", result.masked_text)
+        self.assertIn("ADDRESS", result.masked_text)
+        self.assertIn("BANK_ACCOUNT", result.masked_text)
+
     def test_report_escapes_untrusted_filename_and_keeps_preliminary_disclaimer(self):
         html = render_report(
             screen_text("Công việc: Kế toán"),
@@ -139,6 +158,27 @@ class AppTests(unittest.TestCase):
         self.assertIn("Đang rà soát hợp đồng", home)
         self.assertIn("addEventListener('submit'", home)
 
+    def test_primary_button_text_is_centered(self):
+        home = render_home()
+        self.assertIn("justify-content:center", home)
+        self.assertIn("align-items:center", home)
+
+    def test_healthz_returns_ok(self):
+        sent: dict[str, object] = {}
+
+        class Handler(ScreeningHandler):
+            path = "/healthz"
+            def send_response(self, code, message=None): sent["status"] = code
+            def send_header(self, keyword, value): sent[keyword] = value
+            def end_headers(self): pass
+
+        handler = object.__new__(Handler)
+        handler.wfile = BytesIO()
+        handler.do_GET()
+
+        self.assertEqual(sent["status"], 200)
+        self.assertEqual(handler.wfile.getvalue(), b"ok")
+
     def test_cross_site_origin_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "Origin"):
             validate_request_origin("https://attacker.example", "127.0.0.1:8000")
@@ -148,9 +188,23 @@ class AppTests(unittest.TestCase):
         validate_request_origin("https://vn-legal-contract-review.onrender.com", "vn-legal-contract-review.onrender.com")
         validate_request_origin("", "127.0.0.1:8000")
 
+    def test_extract_contract_text_reads_docx_paragraphs_and_tables(self):
+        stream = BytesIO()
+        document = Document()
+        document.add_paragraph("Hợp đồng dịch vụ")
+        table = document.add_table(rows=1, cols=2)
+        table.cell(0, 0).text = "Bên A"
+        table.cell(0, 1).text = "Bên B cung cấp dịch vụ vận hành website"
+        document.save(stream)
+
+        text = extract_contract_text("contract.docx", stream.getvalue())
+
+        self.assertIn("Hợp đồng dịch vụ", text)
+        self.assertIn("Bên B cung cấp dịch vụ vận hành website", text)
+
     def test_extract_contract_text_rejects_invalid_extension(self):
-        with self.assertRaisesRegex(ValueError, "TXT hoặc PDF"):
-            extract_contract_text("contract.docx", b"not a docx")
+        with self.assertRaisesRegex(ValueError, "TXT, PDF hoặc DOCX"):
+            extract_contract_text("contract.doc", b"not a doc")
 
     def test_extract_contract_text_rejects_oversized_upload(self):
         with self.assertRaisesRegex(ValueError, "2 MiB"):
@@ -164,6 +218,27 @@ class AppTests(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "lớp văn bản"):
             extract_contract_text("scan.pdf", stream.getvalue())
+
+    def test_report_pdf_contains_report_text(self):
+        result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
+        pdf = make_report_pdf(result, "contract.docx")
+
+        self.assertTrue(pdf.startswith(b"%PDF"))
+        reader = PdfReader(BytesIO(pdf))
+        text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        self.assertIn("Kết quả rà soát sơ bộ", text)
+        self.assertIn("contract.docx", text)
+        self.assertIn("Bộ luật Dân sự 2015", text)
+
+    def test_report_includes_pdf_download_button(self):
+        html = render_report(
+            screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A."),
+            "contract.docx",
+        )
+
+        self.assertIn("download='contract-review-report.pdf'", html)
+        self.assertIn("data:application/pdf;base64,", html)
+        self.assertIn("Tải báo cáo PDF", html)
 
     def test_ai_review_requires_explicit_consent(self):
         with self.assertRaisesRegex(PermissionError, "đồng ý"):
