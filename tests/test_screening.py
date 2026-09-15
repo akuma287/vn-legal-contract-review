@@ -69,6 +69,38 @@ class ScreeningTests(unittest.TestCase):
         self.assertIn("PDPD2023-EMPLOYEE-CUSTOMER-DATA", ids)
         self.assertIn("IP2005-WORK-CREATED-ASSET", ids)
 
+    def test_base_contract_rules_cover_common_contract_gaps(self):
+        result = screen_text("Hợp đồng dịch vụ. Bên A thuê Bên B tư vấn triển khai hệ thống.")
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("BASE-CONTRACT-PARTIES-AUTHORITY", ids)
+        self.assertIn("BASE-CONTRACT-PAYMENT", ids)
+        self.assertIn("BASE-CONTRACT-TERMINATION", ids)
+        self.assertIn("BASE-CONTRACT-DISPUTE", ids)
+
+    def test_service_contract_rules_cover_scope_acceptance_and_sla(self):
+        result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("SERVICE-CONTRACT-SCOPE-DELIVERABLES", ids)
+        self.assertIn("SERVICE-CONTRACT-ACCEPTANCE", ids)
+        self.assertIn("SERVICE-CONTRACT-SLA", ids)
+
+    def test_service_contract_does_not_emit_labor_required_rules(self):
+        result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertNotIn("BLLD2019-ART21-WAGES", ids)
+        self.assertNotIn("BLLD2019-ART21-EMPLOYEE", ids)
+
+    def test_cooperation_contract_rules_cover_contribution_profit_and_exit(self):
+        result = screen_text("Hợp đồng hợp tác kinh doanh giữa hai bên để phát triển sản phẩm.")
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("COOP-CONTRACT-CONTRIBUTIONS", ids)
+        self.assertIn("COOP-CONTRACT-PROFIT-SHARING", ids)
+        self.assertIn("COOP-CONTRACT-EXIT", ids)
+
 
 class AppTests(unittest.TestCase):
     def test_report_escapes_untrusted_filename_and_keeps_preliminary_disclaimer(self):

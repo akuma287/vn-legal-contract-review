@@ -7,6 +7,7 @@
     "url": "https://vbpl.vn/TW/Pages/vbpqen-toanvan.aspx?ItemID=11135"
   },
   "disclaimer": "Kết quả là sàng lọc sơ bộ dựa trên dấu hiệu văn bản. Không phải tư vấn pháp lý, kết luận tuân thủ, hay xác nhận hợp đồng có hiệu lực.",
+  "applies_when": ["hợp đồng lao động", "người lao động", "người sử dụng lao động", "công việc:", "tiền lương", "mức lương"],
   "required_content_rules": [
     {
       "id": "BLLD2019-ART21-EMPLOYER",

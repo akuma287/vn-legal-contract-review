@@ -1,4 +1,4 @@
-"""Preliminary Vietnamese labor-contract screening. No legal verdicts."""
+"""Preliminary Vietnamese contract screening. No legal verdicts."""
 
 from __future__ import annotations
 
@@ -26,8 +26,9 @@ def load_rule_pack(path: str | Path = DEFAULT_RULE_PACK) -> dict[str, Any]:
 
 
 def load_rule_packs(rules_dir: Path = RULES_DIR) -> list[dict[str, Any]]:
-    """Load all curated local rule packs; labor pack stays primary for display/disclaimer."""
-    paths = sorted(rules_dir.glob("*.json"), key=lambda path: (path.name != "labor_code_2019.json", path.name))
+    """Load all curated local rule packs; base contract pack stays primary."""
+    first = {"base_contract.json": 0, "labor_code_2019.json": 1}
+    paths = sorted(rules_dir.glob("*.json"), key=lambda path: (first.get(path.name, 2), path.name))
     return [load_rule_pack(path) for path in paths]
 
 
@@ -57,6 +58,10 @@ def screen_text(text: str, rule_pack: dict[str, Any] | None = None) -> dict[str,
     findings: list[dict[str, Any]] = []
 
     for pack in rule_packs:
+        applies_when = pack.get("applies_when", [])
+        if applies_when and not any(keyword.casefold() in normalized for keyword in applies_when):
+            continue
+
         for rule in pack.get("required_content_rules", []):
             if not any(keyword.casefold() in normalized for keyword in rule["keywords"]):
                 findings.append(

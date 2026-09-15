@@ -1,0 +1,41 @@
+{
+  "rule_pack_version": "0.2.0-service-contract",
+  "source": {
+    "instrument": "Bộ luật Dân sự 2015 — Hợp đồng dịch vụ",
+    "number": "91/2015/QH13",
+    "effective_from": "2017-01-01",
+    "url": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=96189"
+  },
+  "presence_review_rules": [
+    {
+      "id": "SERVICE-CONTRACT-SCOPE-DELIVERABLES",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra phạm vi công việc và sản phẩm bàn giao",
+      "legal_basis": "Bộ luật Dân sự 2015 — hợp đồng dịch vụ, nghĩa vụ thực hiện công việc theo thỏa thuận",
+      "triggers": ["hợp đồng dịch vụ", "dịch vụ", "cung cấp dịch vụ", "thuê", "bên cung cấp"],
+      "required_keywords": ["phạm vi công việc", "sản phẩm bàn giao", "deliverable", "mô tả dịch vụ", "phụ lục", "yêu cầu kỹ thuật"],
+      "missing_facts": ["Phạm vi công việc cụ thể", "Sản phẩm/kết quả bàn giao", "Ngoài phạm vi và thay đổi yêu cầu", "Phụ lục mô tả dịch vụ nếu có"],
+      "recommendation": "Hỏi rõ đầu việc, đầu ra, điều gì không nằm trong phạm vi và cơ chế thay đổi yêu cầu."
+    },
+    {
+      "id": "SERVICE-CONTRACT-ACCEPTANCE",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra nghiệm thu và tiêu chí hoàn thành",
+      "legal_basis": "Bộ luật Dân sự 2015 — nghiệm thu/kết quả công việc và thanh toán theo thỏa thuận dịch vụ",
+      "triggers": ["hợp đồng dịch vụ", "dịch vụ", "bàn giao", "triển khai", "vận hành"],
+      "required_keywords": ["nghiệm thu", "biên bản nghiệm thu", "tiêu chí nghiệm thu", "hoàn thành", "chấp nhận", "sửa lỗi"],
+      "missing_facts": ["Tiêu chí nghiệm thu", "Thời hạn phản hồi/sửa lỗi", "Hồ sơ nghiệm thu", "Hậu quả nếu không phản hồi nghiệm thu"],
+      "recommendation": "Bổ sung tiêu chí nghiệm thu và quy trình xử lý khi một bên không phản hồi hoặc không đạt nghiệm thu."
+    },
+    {
+      "id": "SERVICE-CONTRACT-SLA",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra SLA, tiến độ và chế tài dịch vụ",
+      "legal_basis": "Bộ luật Dân sự 2015 — trách nhiệm do vi phạm nghĩa vụ và bồi thường thiệt hại theo hợp đồng dịch vụ",
+      "triggers": ["hợp đồng dịch vụ", "dịch vụ", "vận hành", "bảo trì", "hỗ trợ", "sla"],
+      "required_keywords": ["sla", "mức dịch vụ", "thời gian phản hồi", "thời gian khắc phục", "tiến độ", "phạt vi phạm", "bồi thường"],
+      "missing_facts": ["Mốc tiến độ/SLA", "Thời gian phản hồi và khắc phục", "Mức phạt/bồi thường", "Ngoại lệ bất khả kháng hoặc phụ thuộc bên thuê"],
+      "recommendation": "Làm rõ SLA/tiến độ bằng số đo cụ thể và chế tài nếu không đạt."
+    }
+  ]
+}

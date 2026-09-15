@@ -1,0 +1,52 @@
+{
+  "rule_pack_version": "0.2.0-base-contract",
+  "source": {
+    "instrument": "Bộ luật Dân sự 2015",
+    "number": "91/2015/QH13",
+    "effective_from": "2017-01-01",
+    "url": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=96189"
+  },
+  "disclaimer": "Kết quả là sàng lọc sơ bộ dựa trên dấu hiệu văn bản. Không phải tư vấn pháp lý, kết luận tuân thủ, hay xác nhận hợp đồng có hiệu lực.",
+  "presence_review_rules": [
+    {
+      "id": "BASE-CONTRACT-PARTIES-AUTHORITY",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra chủ thể và thẩm quyền ký",
+      "legal_basis": "Bộ luật Dân sự 2015 — nguyên tắc giao kết, chủ thể và đại diện trong giao dịch dân sự",
+      "triggers": ["hợp đồng", "thỏa thuận", "bên a", "bên b"],
+      "required_keywords": ["đại diện", "chức vụ", "ủy quyền", "giấy chứng nhận đăng ký", "mã số thuế", "địa chỉ"],
+      "missing_facts": ["Thông tin định danh các bên", "Người đại diện và căn cứ thẩm quyền ký", "Địa chỉ/thông tin liên hệ để gửi thông báo"],
+      "recommendation": "Đối chiếu thông tin pháp lý của các bên và thẩm quyền ký trước khi ký."
+    },
+    {
+      "id": "BASE-CONTRACT-PAYMENT",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra giá trị và thanh toán",
+      "legal_basis": "Bộ luật Dân sự 2015 — thỏa thuận về đối tượng, giá và nghĩa vụ thanh toán trong hợp đồng",
+      "triggers": ["hợp đồng", "dịch vụ", "hợp tác", "thanh toán", "phí", "giá trị"],
+      "required_keywords": ["giá trị hợp đồng", "phí dịch vụ", "thù lao", "đơn giá", "vat", "hóa đơn", "thời hạn thanh toán", "tạm ứng"],
+      "missing_facts": ["Giá trị/đơn giá", "Thời hạn và phương thức thanh toán", "VAT/hóa đơn/chi phí phát sinh", "Điều kiện tạm ứng/quyết toán"],
+      "recommendation": "Hỏi rõ số tiền, mốc thanh toán, chứng từ và điều kiện phát sinh chi phí."
+    },
+    {
+      "id": "BASE-CONTRACT-TERMINATION",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra điều khoản chấm dứt hợp đồng",
+      "legal_basis": "Bộ luật Dân sự 2015 — thực hiện, sửa đổi, chấm dứt hợp đồng và trách nhiệm do vi phạm nghĩa vụ",
+      "triggers": ["hợp đồng", "dịch vụ", "hợp tác", "thời hạn", "hiệu lực"],
+      "required_keywords": ["chấm dứt", "đơn phương", "thông báo trước", "thanh lý", "bồi thường", "phạt vi phạm", "sự kiện bất khả kháng"],
+      "missing_facts": ["Trường hợp được chấm dứt", "Thời hạn thông báo", "Hậu quả sau chấm dứt", "Phạt/bồi thường/thanh lý"],
+      "recommendation": "Làm rõ quyền chấm dứt, quy trình thông báo và nghĩa vụ còn lại sau chấm dứt."
+    },
+    {
+      "id": "BASE-CONTRACT-DISPUTE",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra cơ chế giải quyết tranh chấp",
+      "legal_basis": "Bộ luật Dân sự 2015 và pháp luật tố tụng/trọng tài thương mại — thỏa thuận về luật áp dụng và giải quyết tranh chấp",
+      "triggers": ["hợp đồng", "dịch vụ", "hợp tác", "bên a", "bên b"],
+      "required_keywords": ["tranh chấp", "thương lượng", "hòa giải", "tòa án", "trọng tài", "luật áp dụng", "thẩm quyền"],
+      "missing_facts": ["Luật áp dụng", "Cơ quan giải quyết tranh chấp", "Quy trình thương lượng/hòa giải", "Ngôn ngữ và địa điểm nếu có yếu tố nước ngoài"],
+      "recommendation": "Bổ sung/đối chiếu nơi giải quyết tranh chấp và luật áp dụng để tránh mơ hồ khi có tranh chấp."
+    }
+  ]
+}

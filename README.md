@@ -1,6 +1,6 @@
-# VN Labor Contract Review — MVP
+# VN Contract Review — MVP
 
-Local web app sàng lọc sơ bộ hợp đồng lao động Việt Nam.
+Local web app sàng lọc sơ bộ hợp đồng Việt Nam.
 
 ## Chạy
 
@@ -33,8 +33,9 @@ Không commit `.env`. Key từng xuất hiện trong chat phải rotate trước
 
 - TXT UTF-8 và PDF có text layer, tối đa 2 MiB.
 - Không lưu file hay text hợp đồng.
-- Rule pack `0.1.0`: Bộ luật Lao động 2019, `45/2019/QH14`, hiệu lực `2021-01-01`.
-- Check heuristic Điều 21 và thời hạn >36 tháng của Điều 20.
+- Rule pack nền: chủ thể/thẩm quyền, thanh toán, chấm dứt, tranh chấp.
+- Rule pack chuyên đề: hợp đồng lao động, dịch vụ, hợp tác, BHXH, thuế TNCN, dữ liệu cá nhân, sở hữu trí tuệ.
+- Hợp đồng có thể match nhiều pack; ví dụ hợp tác cung cấp dịch vụ chạy cả hợp tác và dịch vụ.
 - AI chỉ nêu `Cần kiểm tra`; citation AI bị filter vào IDs do rule engine sinh.
 
 ## Không có
@@ -52,6 +53,7 @@ python3 -m compileall -q app.py screening.py tests
 
 ## Nguồn rule-pack
 
+[Bộ luật Dân sự 2015 — 91/2015/QH13](https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=96189)
 [Bộ luật Lao động 2019 — 45/2019/QH14](https://vbpl.vn/TW/Pages/vbpqen-toanvan.aspx?ItemID=11135)
 
 Rule pack là snapshot MVP. Verify hiệu lực văn bản và nội dung từng Điều/Khoản trước pilot thật.

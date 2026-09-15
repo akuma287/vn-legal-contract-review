@@ -1,0 +1,41 @@
+{
+  "rule_pack_version": "0.2.0-cooperation-contract",
+  "source": {
+    "instrument": "Bộ luật Dân sự 2015 — Hợp đồng hợp tác",
+    "number": "91/2015/QH13",
+    "effective_from": "2017-01-01",
+    "url": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=96189"
+  },
+  "presence_review_rules": [
+    {
+      "id": "COOP-CONTRACT-CONTRIBUTIONS",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra phần đóng góp của từng bên",
+      "legal_basis": "Bộ luật Dân sự 2015 — hợp đồng hợp tác, đóng góp tài sản/công sức và cùng hưởng lợi/cùng chịu trách nhiệm",
+      "triggers": ["hợp đồng hợp tác", "hợp tác kinh doanh", "cùng hợp tác", "phân chia lợi nhuận", "góp vốn", "đóng góp"],
+      "required_keywords": ["góp vốn", "tài sản góp", "đóng góp", "tỷ lệ góp", "thời hạn góp", "công sức", "nguồn lực"],
+      "missing_facts": ["Loại và giá trị phần đóng góp", "Thời hạn góp", "Cách định giá tài sản/công sức", "Hậu quả nếu góp thiếu/chậm"],
+      "recommendation": "Hỏi rõ từng bên góp gì, giá trị bao nhiêu, khi nào góp và xử lý khi góp thiếu/chậm."
+    },
+    {
+      "id": "COOP-CONTRACT-PROFIT-SHARING",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra phân chia lợi nhuận và chi phí/lỗ",
+      "legal_basis": "Bộ luật Dân sự 2015 — hợp đồng hợp tác, cùng hưởng hoa lợi/lợi tức và cùng chịu trách nhiệm theo thỏa thuận",
+      "triggers": ["hợp đồng hợp tác", "hợp tác kinh doanh", "lợi nhuận", "doanh thu", "chi phí", "lỗ"],
+      "required_keywords": ["phân chia lợi nhuận", "tỷ lệ phân chia", "doanh thu", "chi phí", "lỗ", "quyết toán", "báo cáo tài chính"],
+      "missing_facts": ["Công thức chia lợi nhuận", "Chi phí được trừ", "Cách chia lỗ/trách nhiệm nợ", "Chu kỳ báo cáo và quyết toán"],
+      "recommendation": "Chốt công thức chia tiền bằng số/tỷ lệ và quy trình quyết toán có chứng từ."
+    },
+    {
+      "id": "COOP-CONTRACT-EXIT",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra rút khỏi hợp tác và xử lý tài sản chung",
+      "legal_basis": "Bộ luật Dân sự 2015 — chấm dứt hợp đồng hợp tác và thanh toán/tài sản khi thành viên rút khỏi hợp tác",
+      "triggers": ["hợp đồng hợp tác", "hợp tác kinh doanh", "tài sản chung", "dự án", "sản phẩm chung"],
+      "required_keywords": ["rút khỏi", "chấm dứt hợp tác", "mua lại", "chuyển nhượng", "thanh lý", "tài sản chung", "xử lý tài sản"],
+      "missing_facts": ["Điều kiện rút khỏi hợp tác", "Cách định giá/mua lại phần tham gia", "Xử lý tài sản chung/dữ liệu/khách hàng", "Nghĩa vụ còn lại sau khi rút"],
+      "recommendation": "Làm rõ exit, định giá phần tham gia và xử lý tài sản/dữ liệu/khách hàng sau khi chấm dứt hợp tác."
+    }
+  ]
+}
