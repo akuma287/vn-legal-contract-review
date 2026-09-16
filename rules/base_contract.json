@@ -1,5 +1,5 @@
 {
-  "rule_pack_version": "0.2.0-base-contract",
+  "rule_pack_version": "0.4.0-base-contract",
   "source": {
     "instrument": "Bộ luật Dân sự 2015",
     "number": "91/2015/QH13",
@@ -27,6 +27,116 @@
       "required_keywords": ["giá trị hợp đồng", "phí dịch vụ", "thù lao", "đơn giá", "vat", "hóa đơn", "thời hạn thanh toán", "tạm ứng"],
       "missing_facts": ["Giá trị/đơn giá", "Thời hạn và phương thức thanh toán", "VAT/hóa đơn/chi phí phát sinh", "Điều kiện tạm ứng/quyết toán"],
       "recommendation": "Hỏi rõ số tiền, mốc thanh toán, chứng từ và điều kiện phát sinh chi phí."
+    },
+    {
+      "id": "BASE-CONTRACT-DELIVERY-ACCEPTANCE",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra bàn giao và nghiệm thu",
+      "legal_basis": "Bộ luật Dân sự 2015 — thực hiện nghĩa vụ, giao nhận kết quả và xác nhận hoàn thành theo thỏa thuận",
+      "triggers": ["bàn giao", "triển khai", "giao nhận", "kết quả", "sản phẩm", "deliverable"],
+      "required_keywords": ["nghiệm thu", "biên bản nghiệm thu", "tiêu chí nghiệm thu", "chấp nhận", "từ chối nghiệm thu", "thời hạn phản hồi"],
+      "missing_facts": ["Mốc bàn giao", "Tiêu chí nghiệm thu", "Hồ sơ bàn giao", "Cơ chế từ chối/sửa lỗi nghiệm thu"],
+      "recommendation": "Bổ sung tiêu chí và quy trình nghiệm thu để tránh tranh cãi việc đã hoàn thành hay chưa."
+    },
+    {
+      "id": "BASE-CONTRACT-CONFIDENTIALITY",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra bảo mật thông tin",
+      "legal_basis": "Bộ luật Dân sự 2015 — nghĩa vụ theo thỏa thuận và trách nhiệm khi vi phạm nghĩa vụ bảo mật",
+      "triggers": ["dữ liệu", "tài liệu nội bộ", "thông tin", "khách hàng", "bí mật", "hồ sơ"],
+      "required_keywords": ["bảo mật", "bí mật", "không tiết lộ", "tiết lộ", "nda", "thông tin mật", "ngoại lệ bảo mật"],
+      "missing_facts": ["Định nghĩa thông tin mật", "Ngoại lệ được tiết lộ", "Thời hạn bảo mật", "Chế tài khi lộ thông tin"],
+      "recommendation": "Làm rõ phạm vi thông tin mật, người được tiếp cận và nghĩa vụ sau khi hợp đồng chấm dứt."
+    },
+    {
+      "id": "BASE-CONTRACT-IP-OWNERSHIP",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra quyền sở hữu trí tuệ và tài sản tạo ra",
+      "legal_basis": "Bộ luật Dân sự 2015 và pháp luật sở hữu trí tuệ — quyền đối với tài sản, kết quả công việc và quyền sở hữu trí tuệ theo thỏa thuận",
+      "triggers": ["phần mềm", "mã nguồn", "tài liệu", "thiết kế", "sản phẩm", "nội dung", "logo"],
+      "required_keywords": ["sở hữu trí tuệ", "quyền sở hữu", "quyền sử dụng", "chuyển giao", "mã nguồn", "bản quyền", "tài sản tạo ra"],
+      "missing_facts": ["Ai sở hữu sản phẩm/tài liệu tạo ra", "Phạm vi quyền sử dụng/chuyển giao", "Quyền với tài sản có sẵn", "Quyền dùng làm portfolio/tham chiếu"],
+      "recommendation": "Chốt quyền sở hữu và quyền sử dụng sản phẩm trước khi triển khai hoặc bàn giao."
+    },
+    {
+      "id": "BASE-CONTRACT-LIABILITY-CAP",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra giới hạn trách nhiệm và bồi thường",
+      "legal_basis": "Bộ luật Dân sự 2015 — trách nhiệm do vi phạm nghĩa vụ, phạt vi phạm và bồi thường thiệt hại theo thỏa thuận",
+      "triggers": ["vi phạm", "thiệt hại", "rủi ro", "phạt", "bồi thường", "chậm", "không thực hiện"],
+      "required_keywords": ["giới hạn trách nhiệm", "mức bồi thường", "phạt vi phạm", "thiệt hại trực tiếp", "thiệt hại gián tiếp", "trần trách nhiệm"],
+      "missing_facts": ["Mức phạt/bồi thường", "Loại thiệt hại được bồi thường", "Trần trách nhiệm", "Ngoại lệ với bảo mật/dữ liệu/vi phạm cố ý"],
+      "recommendation": "Làm rõ trách nhiệm tài chính tối đa và loại thiệt hại được yêu cầu bồi thường."
+    },
+    {
+      "id": "BASE-CONTRACT-NOTICES",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra thông báo và đầu mối liên hệ",
+      "legal_basis": "Bộ luật Dân sự 2015 — gửi, nhận thông báo và xác lập thời điểm phát sinh quyền/nghĩa vụ theo thỏa thuận",
+      "triggers": ["thông báo", "email", "văn bản", "địa chỉ", "đầu mối", "liên hệ", "bên a", "bên b"],
+      "required_keywords": ["địa chỉ nhận thông báo", "email nhận thông báo", "đầu mối liên hệ", "thời điểm nhận", "ngày làm việc", "xác nhận đã nhận"],
+      "missing_facts": ["Kênh gửi thông báo", "Đầu mối nhận thông báo", "Thời điểm thông báo có hiệu lực", "Cách cập nhật địa chỉ/email"],
+      "recommendation": "Bổ sung địa chỉ/email nhận thông báo và thời điểm thông báo được coi là đã nhận."
+    },
+    {
+      "id": "BASE-CONTRACT-FORCE-MAJEURE",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra bất khả kháng và miễn trách nhiệm",
+      "legal_basis": "Bộ luật Dân sự 2015 — sự kiện bất khả kháng và miễn trách nhiệm khi không thực hiện đúng nghĩa vụ",
+      "triggers": ["chậm", "không thực hiện", "sự kiện", "dịch bệnh", "thiên tai", "ngừng cung cấp"],
+      "required_keywords": ["bất khả kháng", "miễn trách nhiệm", "thông báo sự kiện", "khắc phục hậu quả", "tạm ngừng thực hiện"],
+      "missing_facts": ["Sự kiện nào được coi là bất khả kháng", "Nghĩa vụ thông báo", "Thời gian được tạm ngừng", "Quyền chấm dứt nếu kéo dài"],
+      "recommendation": "Định nghĩa rõ bất khả kháng và nghĩa vụ giảm thiểu thiệt hại/thông báo."
+    },
+    {
+      "id": "BASE-CONTRACT-EFFECTIVE-TERM",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra hiệu lực, thời hạn và gia hạn",
+      "legal_basis": "Bộ luật Dân sự 2015 — thời điểm có hiệu lực, thời hạn thực hiện và gia hạn hợp đồng theo thỏa thuận",
+      "triggers": ["hiệu lực", "thời hạn", "từ ngày ký", "ngày hết hạn", "gia hạn"],
+      "required_keywords": ["ngày hiệu lực", "ngày hết hạn", "thời hạn hợp đồng", "gia hạn", "điều kiện gia hạn"],
+      "missing_facts": ["Ngày hiệu lực", "Ngày hết hạn/thời hạn", "Cơ chế gia hạn", "Nghĩa vụ còn hiệu lực sau khi hết hạn"],
+      "recommendation": "Làm rõ hợp đồng bắt đầu/kết thúc khi nào và có tự động gia hạn hay không."
+    },
+    {
+      "id": "BASE-CONTRACT-AMENDMENT",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra sửa đổi, bổ sung hợp đồng",
+      "legal_basis": "Bộ luật Dân sự 2015 — sửa đổi, bổ sung hợp đồng theo thỏa thuận của các bên",
+      "triggers": ["phụ lục", "sửa đổi", "bổ sung", "thay đổi", "điều chỉnh"],
+      "required_keywords": ["phụ lục hợp đồng", "bằng văn bản", "người có thẩm quyền", "hiệu lực sửa đổi", "thứ tự ưu tiên"],
+      "missing_facts": ["Hình thức sửa đổi", "Người có thẩm quyền ký phụ lục", "Thời điểm hiệu lực sửa đổi", "Xử lý mâu thuẫn giữa hợp đồng và phụ lục"],
+      "recommendation": "Yêu cầu mọi sửa đổi quan trọng được lập thành văn bản/phụ lục bởi người có thẩm quyền."
+    },
+    {
+      "id": "BASE-CONTRACT-ASSIGNMENT",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra chuyển nhượng/chuyển giao quyền và nghĩa vụ",
+      "legal_basis": "Bộ luật Dân sự 2015 — chuyển giao quyền yêu cầu, chuyển giao nghĩa vụ và thay đổi chủ thể theo thỏa thuận",
+      "triggers": ["chuyển nhượng", "chuyển giao nghĩa vụ", "chuyển giao quyền", "bên thứ ba", "thay thế bên"],
+      "required_keywords": ["chấp thuận bằng văn bản", "thông báo chuyển nhượng", "bên nhận chuyển nhượng", "trách nhiệm sau chuyển giao"],
+      "missing_facts": ["Có cần chấp thuận trước không", "Bên nhận chuyển nhượng", "Trách nhiệm còn lại sau chuyển giao", "Thông báo cho bên còn lại"],
+      "recommendation": "Làm rõ bên nào được chuyển giao quyền/nghĩa vụ và điều kiện cần chấp thuận."
+    },
+    {
+      "id": "BASE-CONTRACT-DOCUMENT-ORDER",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra thứ tự ưu tiên tài liệu hợp đồng",
+      "legal_basis": "Bộ luật Dân sự 2015 — giải thích hợp đồng và xác định nội dung thỏa thuận khi có tài liệu kèm theo",
+      "triggers": ["phụ lục", "đề xuất", "báo giá", "sow", "đơn đặt hàng", "tài liệu kèm theo"],
+      "required_keywords": ["thứ tự ưu tiên", "mâu thuẫn tài liệu", "phụ lục ưu tiên", "văn bản nào áp dụng"],
+      "missing_facts": ["Tài liệu nào là một phần hợp đồng", "Thứ tự ưu tiên khi mâu thuẫn", "Cách xử lý phụ lục/báo giá/SOW khác nhau"],
+      "recommendation": "Bổ sung thứ tự ưu tiên giữa hợp đồng, phụ lục, báo giá, SOW và tài liệu kèm theo."
+    },
+    {
+      "id": "BASE-CONTRACT-LANGUAGE",
+      "domain": "Hợp đồng cơ bản",
+      "title": "Cần kiểm tra ngôn ngữ và bản ưu tiên",
+      "legal_basis": "Bộ luật Dân sự 2015 — giải thích hợp đồng khi nội dung có nhiều cách hiểu hoặc nhiều bản ngôn ngữ",
+      "triggers": ["tiếng anh", "song ngữ", "bản tiếng việt", "bản tiếng anh", "ngôn ngữ"],
+      "required_keywords": ["ngôn ngữ ưu tiên", "bản tiếng việt ưu tiên", "bản tiếng anh ưu tiên", "giải thích khác nhau"],
+      "missing_facts": ["Ngôn ngữ nào là bản gốc", "Bản nào ưu tiên khi có khác biệt", "Cách xử lý thuật ngữ dịch không thống nhất"],
+      "recommendation": "Chốt bản ngôn ngữ ưu tiên nếu hợp đồng song ngữ hoặc có phụ lục tiếng nước ngoài."
     },
     {
       "id": "BASE-CONTRACT-TERMINATION",

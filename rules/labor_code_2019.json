@@ -1,5 +1,5 @@
 {
-  "rule_pack_version": "0.1.0",
+  "rule_pack_version": "0.3.0-labor-contract",
   "source": {
     "instrument": "Bộ luật Lao động 2019",
     "number": "45/2019/QH14",
@@ -7,86 +7,165 @@
     "url": "https://vbpl.vn/TW/Pages/vbpqen-toanvan.aspx?ItemID=11135"
   },
   "disclaimer": "Kết quả là sàng lọc sơ bộ dựa trên dấu hiệu văn bản. Không phải tư vấn pháp lý, kết luận tuân thủ, hay xác nhận hợp đồng có hiệu lực.",
-  "applies_when": ["hợp đồng lao động", "người lao động", "người sử dụng lao động", "công việc:", "tiền lương", "mức lương"],
+  "applies_when": [
+    "hợp đồng lao động",
+    "người lao động",
+    "người sử dụng lao động",
+    "công việc:",
+    "tiền lương",
+    "mức lương"
+  ],
   "required_content_rules": [
     {
       "id": "BLLD2019-ART21-EMPLOYER",
       "title": "Cần kiểm tra thông tin người sử dụng lao động",
       "legal_basis": "Điều 21 khoản 1 điểm a Bộ luật Lao động 2019",
-      "keywords": ["người sử dụng lao động", "công ty", "địa chỉ", "đại diện"],
-      "missing_facts": ["Tên, địa chỉ người sử dụng lao động và người có thẩm quyền giao kết"],
+      "keywords": [
+        "người sử dụng lao động",
+        "công ty",
+        "địa chỉ",
+        "đại diện"
+      ],
+      "missing_facts": [
+        "Tên, địa chỉ người sử dụng lao động và người có thẩm quyền giao kết"
+      ],
       "recommendation": "Đối chiếu bản gốc để xác nhận thông tin chủ thể và thẩm quyền ký."
     },
     {
       "id": "BLLD2019-ART21-EMPLOYEE",
       "title": "Cần kiểm tra thông tin người lao động",
       "legal_basis": "Điều 21 khoản 1 điểm b Bộ luật Lao động 2019",
-      "keywords": ["người lao động", "ngày sinh", "căn cước", "cccd", "nơi cư trú"],
-      "missing_facts": ["Họ tên, ngày sinh, giới tính, nơi cư trú và giấy tờ định danh của người lao động"],
+      "keywords": [
+        "người lao động",
+        "ngày sinh",
+        "căn cước",
+        "cccd",
+        "nơi cư trú"
+      ],
+      "missing_facts": [
+        "Họ tên, ngày sinh, giới tính, nơi cư trú và giấy tờ định danh của người lao động"
+      ],
       "recommendation": "Đối chiếu bản gốc để xác nhận thông tin định danh người lao động."
     },
     {
       "id": "BLLD2019-ART21-WORK",
       "title": "Cần kiểm tra công việc",
       "legal_basis": "Điều 21 khoản 1 điểm c Bộ luật Lao động 2019",
-      "keywords": ["công việc", "chức danh", "vị trí"],
-      "missing_facts": ["Công việc"],
+      "keywords": [
+        "công việc",
+        "chức danh",
+        "vị trí"
+      ],
+      "missing_facts": [
+        "Công việc"
+      ],
       "recommendation": "Đối chiếu mô tả công việc trong bản gốc."
     },
     {
       "id": "BLLD2019-ART21-WORKPLACE",
       "title": "Cần kiểm tra địa điểm làm việc",
       "legal_basis": "Điều 21 khoản 1 điểm c Bộ luật Lao động 2019",
-      "keywords": ["địa điểm làm việc", "làm việc tại", "nơi làm việc"],
-      "missing_facts": ["Địa điểm làm việc"],
+      "keywords": [
+        "địa điểm làm việc",
+        "làm việc tại",
+        "nơi làm việc"
+      ],
+      "missing_facts": [
+        "Địa điểm làm việc"
+      ],
       "recommendation": "Đối chiếu địa điểm thực hiện công việc trong bản gốc."
     },
     {
       "id": "BLLD2019-ART21-DURATION",
       "title": "Cần kiểm tra thời hạn hợp đồng",
       "legal_basis": "Điều 21 khoản 1 điểm d Bộ luật Lao động 2019",
-      "keywords": ["thời hạn", "từ ngày", "đến ngày", "tháng"],
-      "missing_facts": ["Thời hạn hợp đồng"],
+      "keywords": [
+        "thời hạn",
+        "từ ngày",
+        "đến ngày",
+        "tháng"
+      ],
+      "missing_facts": [
+        "Thời hạn hợp đồng"
+      ],
       "recommendation": "Đối chiếu ngày bắt đầu, ngày kết thúc và loại hợp đồng trong bản gốc."
     },
     {
       "id": "BLLD2019-ART21-WAGES",
       "title": "Cần kiểm tra nội dung tiền lương",
       "legal_basis": "Điều 21 khoản 1 điểm đ Bộ luật Lao động 2019",
-      "keywords": ["mức lương", "tiền lương", "lương cơ bản", "vnđ", "vnd", "phụ cấp"],
-      "missing_facts": ["Mức lương, hình thức và thời hạn trả lương, phụ cấp và khoản bổ sung"],
+      "keywords": [
+        "mức lương",
+        "tiền lương",
+        "lương cơ bản",
+        "vnđ",
+        "vnd",
+        "phụ cấp"
+      ],
+      "missing_facts": [
+        "Mức lương, hình thức và thời hạn trả lương, phụ cấp và khoản bổ sung"
+      ],
       "recommendation": "Đối chiếu mức lương và cơ chế chi trả trong bản gốc."
     },
     {
       "id": "BLLD2019-ART21-PAY-RAISE",
       "title": "Cần kiểm tra chế độ nâng bậc, nâng lương",
       "legal_basis": "Điều 21 khoản 1 điểm e Bộ luật Lao động 2019",
-      "keywords": ["nâng bậc", "nâng lương", "xét tăng lương"],
-      "missing_facts": ["Chế độ nâng bậc, nâng lương"],
+      "keywords": [
+        "nâng bậc",
+        "nâng lương",
+        "xét tăng lương"
+      ],
+      "missing_facts": [
+        "Chế độ nâng bậc, nâng lương"
+      ],
       "recommendation": "Xác định điều khoản áp dụng hoặc văn bản nội bộ được dẫn chiếu."
     },
     {
       "id": "BLLD2019-ART21-WORK-REST",
       "title": "Cần kiểm tra thời giờ làm việc và nghỉ ngơi",
       "legal_basis": "Điều 21 khoản 1 điểm g Bộ luật Lao động 2019",
-      "keywords": ["thời giờ làm việc", "giờ làm việc", "nghỉ ngơi", "ngày nghỉ"],
-      "missing_facts": ["Thời giờ làm việc và thời giờ nghỉ ngơi"],
+      "keywords": [
+        "thời giờ làm việc",
+        "giờ làm việc",
+        "nghỉ ngơi",
+        "ngày nghỉ"
+      ],
+      "missing_facts": [
+        "Thời giờ làm việc và thời giờ nghỉ ngơi"
+      ],
       "recommendation": "Đối chiếu lịch làm việc, thời giờ nghỉ và quy chế liên quan."
     },
     {
       "id": "BLLD2019-ART21-INSURANCE",
       "title": "Cần kiểm tra nội dung bảo hiểm bắt buộc",
       "legal_basis": "Điều 21 khoản 1 điểm i Bộ luật Lao động 2019",
-      "keywords": ["bảo hiểm xã hội", "bhxh", "bảo hiểm y tế", "bhyt", "bảo hiểm thất nghiệp", "bhtn"],
-      "missing_facts": ["Bảo hiểm xã hội, bảo hiểm y tế và bảo hiểm thất nghiệp"],
+      "keywords": [
+        "bảo hiểm xã hội",
+        "bhxh",
+        "bảo hiểm y tế",
+        "bhyt",
+        "bảo hiểm thất nghiệp",
+        "bhtn"
+      ],
+      "missing_facts": [
+        "Bảo hiểm xã hội, bảo hiểm y tế và bảo hiểm thất nghiệp"
+      ],
       "recommendation": "Đối chiếu đối tượng, mức đóng và trách nhiệm đóng theo bản gốc."
     },
     {
       "id": "BLLD2019-ART21-TRAINING",
       "title": "Cần kiểm tra đào tạo và nâng cao kỹ năng nghề",
       "legal_basis": "Điều 21 khoản 1 điểm k Bộ luật Lao động 2019",
-      "keywords": ["đào tạo", "bồi dưỡng", "nâng cao trình độ", "kỹ năng nghề"],
-      "missing_facts": ["Đào tạo, bồi dưỡng, nâng cao trình độ và kỹ năng nghề"],
+      "keywords": [
+        "đào tạo",
+        "bồi dưỡng",
+        "nâng cao trình độ",
+        "kỹ năng nghề"
+      ],
+      "missing_facts": [
+        "Đào tạo, bồi dưỡng, nâng cao trình độ và kỹ năng nghề"
+      ],
       "recommendation": "Xác định điều khoản áp dụng hoặc văn bản nội bộ được dẫn chiếu."
     }
   ],
@@ -95,5 +174,233 @@
     "title": "Cần kiểm tra thời hạn hợp đồng xác định",
     "legal_basis": "Điều 20 khoản 1 điểm b Bộ luật Lao động 2019",
     "recommendation": "Đối chiếu loại hợp đồng, thời hạn ghi nhận và ngoại lệ áp dụng trước khi đưa ra kết luận."
-  }
+  },
+  "presence_review_rules": [
+    {
+      "id": "BLLD2019-ART24-PROBATION",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra thử việc",
+      "legal_basis": "Bộ luật Lao động 2019 — quy định về thử việc, thời gian thử việc, tiền lương thử việc và nội dung thỏa thuận thử việc",
+      "triggers": [
+        "thử việc",
+        "probation",
+        "người lao động",
+        "vị trí",
+        "chức danh"
+      ],
+      "required_keywords": [
+        "thời gian thử việc",
+        "lương thử việc",
+        "kết quả thử việc",
+        "kết thúc thử việc",
+        "thông báo kết quả"
+      ],
+      "missing_facts": [
+        "Có áp dụng thử việc hay không",
+        "Thời gian thử việc",
+        "Lương thử việc",
+        "Tiêu chí/kết quả thử việc"
+      ],
+      "recommendation": "Làm rõ nếu có thử việc: thời hạn, mức lương và cách xác nhận đạt/không đạt trước khi vào hợp đồng chính thức."
+    },
+    {
+      "id": "BLLD2019-OVERTIME",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra làm thêm giờ và làm việc ngoài giờ",
+      "legal_basis": "Bộ luật Lao động 2019 — quy định về thời giờ làm việc, làm thêm giờ, làm việc ban đêm và tiền lương làm thêm",
+      "triggers": [
+        "người lao động",
+        "ca làm",
+        "giờ làm",
+        "làm thêm",
+        "trực",
+        "ngoài giờ"
+      ],
+      "required_keywords": [
+        "làm thêm giờ",
+        "ngoài giờ",
+        "ban đêm",
+        "tăng ca",
+        "tiền lương làm thêm",
+        "đồng ý làm thêm"
+      ],
+      "missing_facts": [
+        "Điều kiện làm thêm giờ",
+        "Cơ chế đồng ý làm thêm",
+        "Cách tính lương làm thêm/làm đêm",
+        "Giới hạn thời gian làm thêm"
+      ],
+      "recommendation": "Bổ sung điều kiện làm thêm giờ, phê duyệt và cách tính tiền lương làm thêm/làm đêm nếu công việc có phát sinh."
+    },
+    {
+      "id": "BLLD2019-LEAVE",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra nghỉ hằng năm, nghỉ lễ và nghỉ phép",
+      "legal_basis": "Bộ luật Lao động 2019 — quy định về nghỉ hằng năm, nghỉ lễ tết, nghỉ việc riêng và nghỉ không hưởng lương",
+      "triggers": [
+        "người lao động",
+        "nghỉ",
+        "phép",
+        "ngày nghỉ",
+        "thời giờ làm việc"
+      ],
+      "required_keywords": [
+        "nghỉ hằng năm",
+        "nghỉ phép",
+        "nghỉ lễ",
+        "nghỉ việc riêng",
+        "nghỉ không hưởng lương",
+        "quy chế nghỉ"
+      ],
+      "missing_facts": [
+        "Số ngày nghỉ hằng năm",
+        "Quy trình xin nghỉ",
+        "Nghỉ lễ/nghỉ việc riêng",
+        "Thanh toán ngày nghỉ chưa dùng"
+      ],
+      "recommendation": "Đối chiếu điều khoản nghỉ với luật và quy chế nội bộ; làm rõ thủ tục đăng ký và thanh toán ngày nghỉ chưa dùng."
+    },
+    {
+      "id": "BLLD2019-CONFIDENTIALITY-IP",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra bảo mật, dữ liệu và sở hữu trí tuệ trong quan hệ lao động",
+      "legal_basis": "Bộ luật Lao động 2019 và pháp luật sở hữu trí tuệ/bảo vệ dữ liệu cá nhân — thỏa thuận về bảo mật, bí mật kinh doanh, công nghệ và tài sản tạo ra trong quá trình làm việc",
+      "triggers": [
+        "mã nguồn",
+        "dữ liệu khách hàng",
+        "bí mật kinh doanh",
+        "bí mật công nghệ",
+        "sản phẩm",
+        "tài liệu",
+        "khách hàng"
+      ],
+      "required_keywords": [
+        "bảo mật",
+        "bí mật kinh doanh",
+        "bí mật công nghệ",
+        "sở hữu trí tuệ",
+        "quyền sở hữu",
+        "chuyển giao",
+        "xử lý dữ liệu"
+      ],
+      "missing_facts": [
+        "Phạm vi thông tin mật",
+        "Quyền sở hữu sản phẩm/tài sản tạo ra",
+        "Nghĩa vụ bảo mật sau nghỉ việc",
+        "Xử lý dữ liệu khách hàng/mã nguồn"
+      ],
+      "recommendation": "Bổ sung phạm vi bảo mật, quyền sở hữu tài sản tạo ra và nghĩa vụ sau khi chấm dứt lao động nếu công việc liên quan mã nguồn/dữ liệu/khách hàng."
+    },
+    {
+      "id": "BLLD2019-REMOTE-WORK",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra làm việc từ xa và địa điểm linh hoạt",
+      "legal_basis": "Bộ luật Lao động 2019 — nội dung hợp đồng về địa điểm làm việc, thời giờ làm việc và an toàn vệ sinh lao động",
+      "triggers": [
+        "làm việc từ xa",
+        "remote",
+        "work from home",
+        "làm việc tại nhà",
+        "địa điểm linh hoạt"
+      ],
+      "required_keywords": [
+        "địa điểm làm việc",
+        "thời gian làm việc từ xa",
+        "bảo mật khi làm việc từ xa",
+        "an toàn lao động",
+        "chi phí làm việc từ xa"
+      ],
+      "missing_facts": [
+        "Điều kiện được làm việc từ xa",
+        "Thời giờ và cách chấm công",
+        "Bảo mật khi làm việc ngoài văn phòng",
+        "Chi phí/trang thiết bị hỗ trợ"
+      ],
+      "recommendation": "Làm rõ quy chế remote, chấm công, bảo mật và chi phí/trang thiết bị nếu công việc không cố định tại văn phòng."
+    },
+    {
+      "id": "BLLD2019-EQUIPMENT-EXPENSES",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra công cụ, thiết bị và chi phí làm việc",
+      "legal_basis": "Bộ luật Lao động 2019 — nghĩa vụ bảo đảm điều kiện làm việc và thỏa thuận về công cụ, phương tiện phục vụ công việc",
+      "triggers": [
+        "laptop công ty",
+        "thiết bị",
+        "công cụ làm việc",
+        "chi phí",
+        "phụ cấp điện thoại",
+        "tài sản công ty"
+      ],
+      "required_keywords": [
+        "bàn giao thiết bị",
+        "hoàn trả thiết bị",
+        "chi phí làm việc",
+        "phụ cấp",
+        "bảo quản tài sản"
+      ],
+      "missing_facts": [
+        "Thiết bị/công cụ được cấp",
+        "Trách nhiệm bảo quản/hoàn trả",
+        "Chi phí nào được công ty thanh toán",
+        "Xử lý hư hỏng/mất mát"
+      ],
+      "recommendation": "Bổ sung biên bản bàn giao/hoàn trả thiết bị và cơ chế thanh toán chi phí liên quan công việc."
+    },
+    {
+      "id": "BLLD2019-SALARY-DEDUCTIONS",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra khấu trừ lương, phạt và bồi hoàn",
+      "legal_basis": "Bộ luật Lao động 2019 — nguyên tắc trả lương, khấu trừ lương, xử lý kỷ luật lao động và trách nhiệm vật chất",
+      "triggers": [
+        "khấu trừ",
+        "trừ lương",
+        "phạt",
+        "bồi hoàn",
+        "bồi thường",
+        "nghỉ việc không bàn giao"
+      ],
+      "required_keywords": [
+        "lý do khấu trừ",
+        "mức khấu trừ",
+        "đồng ý khấu trừ",
+        "trách nhiệm vật chất",
+        "quy trình xử lý"
+      ],
+      "missing_facts": [
+        "Trường hợp bị khấu trừ/bồi hoàn",
+        "Mức khấu trừ tối đa",
+        "Quy trình xác định thiệt hại",
+        "Cơ chế khiếu nại/đối chiếu"
+      ],
+      "recommendation": "Đối chiếu điều khoản khấu trừ/phạt với luật và quy chế nội bộ; yêu cầu nêu rõ căn cứ, mức và quy trình."
+    },
+    {
+      "id": "BLLD2019-TERMINATION-HANDOVER",
+      "domain": "Hợp đồng lao động",
+      "title": "Cần kiểm tra nghỉ việc, báo trước và bàn giao",
+      "legal_basis": "Bộ luật Lao động 2019 — chấm dứt hợp đồng lao động, nghĩa vụ báo trước, thanh toán và hoàn trả tài sản khi chấm dứt",
+      "triggers": [
+        "nghỉ việc",
+        "chấm dứt hợp đồng",
+        "báo trước",
+        "bàn giao",
+        "hoàn trả tài sản",
+        "quyết toán"
+      ],
+      "required_keywords": [
+        "thời hạn báo trước",
+        "quy trình bàn giao",
+        "thanh toán cuối cùng",
+        "hoàn trả tài sản",
+        "xác nhận hoàn tất"
+      ],
+      "missing_facts": [
+        "Thời hạn báo trước",
+        "Checklist bàn giao",
+        "Thời hạn thanh toán lương/quyền lợi cuối cùng",
+        "Hoàn trả tài sản/tài khoản/dữ liệu"
+      ],
+      "recommendation": "Làm rõ báo trước, bàn giao và thanh toán cuối cùng để tránh tranh chấp khi nghỉ việc."
+    }
+  ]
 }

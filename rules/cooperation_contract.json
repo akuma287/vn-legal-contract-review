@@ -1,11 +1,12 @@
 {
-  "rule_pack_version": "0.2.0-cooperation-contract",
+  "rule_pack_version": "0.4.0-cooperation-contract",
   "source": {
     "instrument": "Bộ luật Dân sự 2015 — Hợp đồng hợp tác",
     "number": "91/2015/QH13",
     "effective_from": "2017-01-01",
     "url": "https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=96189"
   },
+  "applies_when": ["hợp đồng hợp tác", "hợp tác kinh doanh", "cùng hợp tác", "phân chia lợi nhuận", "góp vốn"],
   "presence_review_rules": [
     {
       "id": "COOP-CONTRACT-CONTRIBUTIONS",
@@ -18,6 +19,16 @@
       "recommendation": "Hỏi rõ từng bên góp gì, giá trị bao nhiêu, khi nào góp và xử lý khi góp thiếu/chậm."
     },
     {
+      "id": "COOP-CONTRACT-GOVERNANCE",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra cơ chế quản trị và ra quyết định",
+      "legal_basis": "Bộ luật Dân sự 2015 — hợp đồng hợp tác, quyền nghĩa vụ của thành viên và quản lý hoạt động hợp tác theo thỏa thuận",
+      "triggers": ["hợp đồng hợp tác", "hợp tác kinh doanh", "dự án", "nền tảng", "sản phẩm chung", "cùng khai thác"],
+      "required_keywords": ["ban điều hành", "quyền biểu quyết", "quyết định", "phê duyệt", "đại diện", "quản lý dự án", "ủy quyền"],
+      "missing_facts": ["Ai có quyền quyết định", "Ngưỡng biểu quyết/phê duyệt", "Người đại diện hợp tác", "Cơ chế xử lý bế tắc"],
+      "recommendation": "Bổ sung cơ chế ra quyết định và xử lý deadlock để tránh dự án đứng yên khi có bất đồng."
+    },
+    {
       "id": "COOP-CONTRACT-PROFIT-SHARING",
       "domain": "Hợp đồng hợp tác",
       "title": "Cần kiểm tra phân chia lợi nhuận và chi phí/lỗ",
@@ -28,6 +39,36 @@
       "recommendation": "Chốt công thức chia tiền bằng số/tỷ lệ và quy trình quyết toán có chứng từ."
     },
     {
+      "id": "COOP-CONTRACT-EXCLUSIVITY",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra độc quyền, không cạnh tranh và xung đột lợi ích",
+      "legal_basis": "Bộ luật Dân sự 2015 và pháp luật cạnh tranh liên quan — quyền tự do thỏa thuận trong giới hạn pháp luật và nghĩa vụ trung thực khi hợp tác",
+      "triggers": ["độc quyền", "không cạnh tranh", "khách hàng", "thị trường", "cùng khai thác", "hợp tác kinh doanh"],
+      "required_keywords": ["phạm vi độc quyền", "thời hạn độc quyền", "không cạnh tranh", "xung đột lợi ích", "ngoại lệ", "lãnh thổ"],
+      "missing_facts": ["Có độc quyền hay không", "Phạm vi/thời hạn/lãnh thổ độc quyền", "Ngoại lệ khách hàng có sẵn", "Xử lý xung đột lợi ích"],
+      "recommendation": "Nếu có độc quyền hoặc không cạnh tranh, cần giới hạn rõ phạm vi và ngoại lệ."
+    },
+    {
+      "id": "COOP-CONTRACT-CUSTOMER-DATA",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra sở hữu khách hàng, dữ liệu và kênh khai thác",
+      "legal_basis": "Bộ luật Dân sự 2015 và quy định bảo vệ dữ liệu cá nhân — quyền khai thác dữ liệu/khách hàng trong quan hệ hợp tác",
+      "triggers": ["khách hàng", "dữ liệu", "user", "người dùng", "lead", "crm", "cùng khai thác"],
+      "required_keywords": ["sở hữu dữ liệu", "quyền khai thác", "đồng ý", "chia sẻ dữ liệu", "xóa dữ liệu", "bàn giao dữ liệu", "bảo mật"],
+      "missing_facts": ["Ai sở hữu danh sách khách hàng/dữ liệu", "Ai được khai thác sau hợp tác", "Điều kiện chia sẻ dữ liệu", "Xóa/bàn giao dữ liệu khi chấm dứt"],
+      "recommendation": "Chốt quyền với khách hàng/dữ liệu và nghĩa vụ bảo mật/xóa/bàn giao khi hợp tác kết thúc."
+    },
+    {
+      "id": "COOP-CONTRACT-IP-BRAND",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra tài sản trí tuệ, thương hiệu và sản phẩm chung",
+      "legal_basis": "Bộ luật Dân sự 2015 và pháp luật sở hữu trí tuệ — quyền với tài sản chung, nhãn hiệu, nội dung và sản phẩm do các bên cùng tạo ra",
+      "triggers": ["sản phẩm chung", "nền tảng", "thương hiệu", "logo", "mã nguồn", "tài liệu", "nội dung"],
+      "required_keywords": ["sở hữu trí tuệ", "nhãn hiệu", "quyền sở hữu", "quyền sử dụng", "đồng sở hữu", "chuyển giao", "cấp phép"],
+      "missing_facts": ["Ai sở hữu sản phẩm/tài sản chung", "Quyền dùng thương hiệu/logo", "Quyền sử dụng sau chấm dứt", "Cơ chế cấp phép/chuyển giao"],
+      "recommendation": "Làm rõ quyền sở hữu và quyền sử dụng tài sản trí tuệ/thương hiệu trong và sau thời hạn hợp tác."
+    },
+    {
       "id": "COOP-CONTRACT-EXIT",
       "domain": "Hợp đồng hợp tác",
       "title": "Cần kiểm tra rút khỏi hợp tác và xử lý tài sản chung",
@@ -36,6 +77,46 @@
       "required_keywords": ["rút khỏi", "chấm dứt hợp tác", "mua lại", "chuyển nhượng", "thanh lý", "tài sản chung", "xử lý tài sản"],
       "missing_facts": ["Điều kiện rút khỏi hợp tác", "Cách định giá/mua lại phần tham gia", "Xử lý tài sản chung/dữ liệu/khách hàng", "Nghĩa vụ còn lại sau khi rút"],
       "recommendation": "Làm rõ exit, định giá phần tham gia và xử lý tài sản/dữ liệu/khách hàng sau khi chấm dứt hợp tác."
+    },
+    {
+      "id": "COOP-CONTRACT-ACCOUNTING-AUDIT",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra kế toán, báo cáo và quyền kiểm tra doanh thu/chi phí",
+      "legal_basis": "Bộ luật Dân sự 2015 — phân chia hoa lợi, lợi tức, chi phí và trách nhiệm theo hợp đồng hợp tác",
+      "triggers": ["doanh thu", "chi phí", "lợi nhuận", "quyết toán", "báo cáo", "chia doanh thu"],
+      "required_keywords": ["sổ sách", "chứng từ", "quyền kiểm tra", "đối soát", "báo cáo tài chính", "kiểm toán"],
+      "missing_facts": ["Cách ghi nhận doanh thu/chi phí", "Chu kỳ đối soát", "Quyền xem chứng từ/sổ sách", "Cơ chế xử lý sai lệch số liệu"],
+      "recommendation": "Bổ sung quyền đối soát/kiểm tra chứng từ để công thức chia tiền có thể kiểm chứng."
+    },
+    {
+      "id": "COOP-CONTRACT-DEADLOCK",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra xử lý bế tắc khi ra quyết định",
+      "legal_basis": "Bộ luật Dân sự 2015 — quản lý hoạt động hợp tác và quyền/nghĩa vụ của các thành viên theo thỏa thuận",
+      "triggers": ["quyết định", "phê duyệt", "dự án", "cùng phát triển", "sản phẩm", "hai bên"],
+      "required_keywords": ["bế tắc", "deadlock", "người quyết định cuối", "leo thang", "mua lại", "chấm dứt nếu không thống nhất"],
+      "missing_facts": ["Cơ chế xử lý bế tắc", "Người/cấp có quyền quyết định cuối", "Thời hạn giải quyết bất đồng", "Quyền chấm dứt/mua lại khi deadlock kéo dài"],
+      "recommendation": "Thêm cơ chế deadlock để dự án không bị kẹt khi hai bên không thống nhất."
+    },
+    {
+      "id": "COOP-CONTRACT-CONFIDENTIALITY",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra bảo mật thông tin trong hợp tác",
+      "legal_basis": "Bộ luật Dân sự 2015 — nghĩa vụ bảo mật và trách nhiệm khi vi phạm nghĩa vụ theo thỏa thuận hợp tác",
+      "triggers": ["thông tin khách hàng", "thông tin mật", "dữ liệu", "bí mật", "sản phẩm", "chiến lược"],
+      "required_keywords": ["bảo mật", "không tiết lộ", "ngoại lệ tiết lộ", "thời hạn bảo mật", "người được tiếp cận"],
+      "missing_facts": ["Định nghĩa thông tin mật", "Người được tiếp cận", "Ngoại lệ tiết lộ", "Nghĩa vụ bảo mật sau chấm dứt"],
+      "recommendation": "Chốt thông tin mật và nghĩa vụ bảo mật riêng cho quan hệ hợp tác, nhất là dữ liệu khách hàng/sản phẩm."
+    },
+    {
+      "id": "COOP-CONTRACT-NON-SOLICIT",
+      "domain": "Hợp đồng hợp tác",
+      "title": "Cần kiểm tra lôi kéo nhân sự/khách hàng",
+      "legal_basis": "Bộ luật Dân sự 2015 và pháp luật cạnh tranh/lao động liên quan — thỏa thuận hạn chế lôi kéo trong phạm vi phù hợp pháp luật",
+      "triggers": ["nhân sự", "khách hàng", "đối tác", "lead", "sales", "cùng khai thác"],
+      "required_keywords": ["không lôi kéo", "non-solicit", "không tiếp cận trực tiếp", "ngoại lệ", "thời hạn hạn chế"],
+      "missing_facts": ["Có hạn chế lôi kéo hay không", "Phạm vi nhân sự/khách hàng", "Thời hạn hạn chế", "Ngoại lệ khách hàng/nhân sự có sẵn"],
+      "recommendation": "Nếu cần hạn chế lôi kéo, giới hạn rõ đối tượng, thời hạn và ngoại lệ để tránh điều khoản quá rộng."
     }
   ]
 }

@@ -82,6 +82,39 @@ class ScreeningTests(unittest.TestCase):
         self.assertIn("BASE-CONTRACT-TERMINATION", ids)
         self.assertIn("BASE-CONTRACT-DISPUTE", ids)
 
+    def test_base_contract_rules_cover_delivery_confidentiality_ip_liability_and_notice(self):
+        result = screen_text(
+            "Hợp đồng dịch vụ. Bên A thuê Bên B triển khai phần mềm, bàn giao dữ liệu và tài liệu nội bộ. Nếu vi phạm gây thiệt hại sẽ xử lý theo hợp đồng."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("BASE-CONTRACT-DELIVERY-ACCEPTANCE", ids)
+        self.assertIn("BASE-CONTRACT-CONFIDENTIALITY", ids)
+        self.assertIn("BASE-CONTRACT-IP-OWNERSHIP", ids)
+        self.assertIn("BASE-CONTRACT-LIABILITY-CAP", ids)
+        self.assertIn("BASE-CONTRACT-NOTICES", ids)
+
+    def test_base_contract_rules_cover_term_amendment_assignment_order_and_language(self):
+        result = screen_text(
+            "Hợp đồng dịch vụ có hiệu lực từ ngày ký, kèm phụ lục tiếng Anh. Bên B có thể chuyển nhượng nghĩa vụ nếu cần."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("BASE-CONTRACT-EFFECTIVE-TERM", ids)
+        self.assertIn("BASE-CONTRACT-AMENDMENT", ids)
+        self.assertIn("BASE-CONTRACT-ASSIGNMENT", ids)
+        self.assertIn("BASE-CONTRACT-DOCUMENT-ORDER", ids)
+        self.assertIn("BASE-CONTRACT-LANGUAGE", ids)
+
+    def test_rule_packs_have_practical_mvp_coverage(self):
+        result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
+        versions = result["rule_pack_version"]
+
+        self.assertIn("0.4.0-base-contract", versions)
+        self.assertIn("0.4.0-service-contract", versions)
+        self.assertIn("0.4.0-cooperation-contract", versions)
+        self.assertIn("0.3.0-labor-contract", versions)
+
     def test_service_contract_rules_cover_scope_acceptance_and_sla(self):
         result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
         ids = {item["id"] for item in result["findings"]}
@@ -90,12 +123,40 @@ class ScreeningTests(unittest.TestCase):
         self.assertIn("SERVICE-CONTRACT-ACCEPTANCE", ids)
         self.assertIn("SERVICE-CONTRACT-SLA", ids)
 
+    def test_service_contract_rules_cover_change_request_data_security_and_subcontracting(self):
+        result = screen_text(
+            "Hợp đồng dịch vụ vận hành website và xử lý dữ liệu khách hàng. Bên B được thuê nhân sự hỗ trợ."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("SERVICE-CONTRACT-CHANGE-REQUEST", ids)
+        self.assertIn("SERVICE-CONTRACT-DATA-SECURITY", ids)
+        self.assertIn("SERVICE-CONTRACT-SUBCONTRACTING", ids)
+        self.assertIn("SERVICE-CONTRACT-WARRANTY-SUPPORT", ids)
+
+    def test_service_contract_rules_cover_reporting_customer_duties_credits_and_exit_handover(self):
+        result = screen_text(
+            "Hợp đồng dịch vụ vận hành website. Bên A cung cấp tài khoản và dữ liệu đầu vào. Bên B báo cáo hàng tháng; nếu lỗi lặp lại sẽ hoàn tiền và bàn giao khi kết thúc."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("SERVICE-CONTRACT-CUSTOMER-RESPONSIBILITIES", ids)
+        self.assertIn("SERVICE-CONTRACT-REPORTING", ids)
+        self.assertIn("SERVICE-CONTRACT-SERVICE-CREDITS", ids)
+        self.assertIn("SERVICE-CONTRACT-EXIT-HANDOVER", ids)
+
     def test_service_contract_does_not_emit_labor_required_rules(self):
         result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
         ids = {item["id"] for item in result["findings"]}
 
         self.assertNotIn("BLLD2019-ART21-WAGES", ids)
         self.assertNotIn("BLLD2019-ART21-EMPLOYEE", ids)
+
+    def test_service_contract_does_not_emit_cooperation_rules_for_customer_data(self):
+        result = screen_text("Hợp đồng dịch vụ. Bên B xử lý dữ liệu khách hàng để vận hành website cho Bên A.")
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertFalse(any(rule_id.startswith("COOP-CONTRACT-") for rule_id in ids))
 
     def test_cooperation_contract_rules_cover_contribution_profit_and_exit(self):
         result = screen_text("Hợp đồng hợp tác kinh doanh giữa hai bên để phát triển sản phẩm.")
@@ -104,6 +165,50 @@ class ScreeningTests(unittest.TestCase):
         self.assertIn("COOP-CONTRACT-CONTRIBUTIONS", ids)
         self.assertIn("COOP-CONTRACT-PROFIT-SHARING", ids)
         self.assertIn("COOP-CONTRACT-EXIT", ids)
+
+    def test_cooperation_contract_rules_cover_governance_exclusivity_and_ip(self):
+        result = screen_text(
+            "Hợp đồng hợp tác kinh doanh phát triển nền tảng. Hai bên cùng khai thác khách hàng và sản phẩm chung."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("COOP-CONTRACT-GOVERNANCE", ids)
+        self.assertIn("COOP-CONTRACT-EXCLUSIVITY", ids)
+        self.assertIn("COOP-CONTRACT-CUSTOMER-DATA", ids)
+        self.assertIn("COOP-CONTRACT-IP-BRAND", ids)
+
+    def test_cooperation_contract_rules_cover_accounting_deadlock_confidentiality_and_non_solicit(self):
+        result = screen_text(
+            "Hợp đồng hợp tác kinh doanh cùng phát triển sản phẩm. Hai bên chia doanh thu, sử dụng nhân sự và thông tin khách hàng chung."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("COOP-CONTRACT-ACCOUNTING-AUDIT", ids)
+        self.assertIn("COOP-CONTRACT-DEADLOCK", ids)
+        self.assertIn("COOP-CONTRACT-CONFIDENTIALITY", ids)
+        self.assertIn("COOP-CONTRACT-NON-SOLICIT", ids)
+
+    def test_labor_contract_rules_cover_probation_overtime_leave_and_confidentiality(self):
+        result = screen_text(
+            "Hợp đồng lao động. Người lao động làm kỹ sư phần mềm, xử lý mã nguồn và dữ liệu khách hàng."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("BLLD2019-ART24-PROBATION", ids)
+        self.assertIn("BLLD2019-OVERTIME", ids)
+        self.assertIn("BLLD2019-LEAVE", ids)
+        self.assertIn("BLLD2019-CONFIDENTIALITY-IP", ids)
+
+    def test_labor_contract_rules_cover_remote_work_equipment_deductions_and_termination(self):
+        result = screen_text(
+            "Hợp đồng lao động. Người lao động làm việc từ xa bằng laptop công ty. Lương có thể bị khấu trừ nếu nghỉ việc không bàn giao."
+        )
+        ids = {item["id"] for item in result["findings"]}
+
+        self.assertIn("BLLD2019-REMOTE-WORK", ids)
+        self.assertIn("BLLD2019-EQUIPMENT-EXPENSES", ids)
+        self.assertIn("BLLD2019-SALARY-DEDUCTIONS", ids)
+        self.assertIn("BLLD2019-TERMINATION-HANDOVER", ids)
 
 
 class AppTests(unittest.TestCase):

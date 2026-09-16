@@ -1,5 +1,5 @@
 {
-  "rule_pack_version": "0.2.0-service-contract",
+  "rule_pack_version": "0.4.0-service-contract",
   "source": {
     "instrument": "Bộ luật Dân sự 2015 — Hợp đồng dịch vụ",
     "number": "91/2015/QH13",
@@ -36,6 +36,86 @@
       "required_keywords": ["sla", "mức dịch vụ", "thời gian phản hồi", "thời gian khắc phục", "tiến độ", "phạt vi phạm", "bồi thường"],
       "missing_facts": ["Mốc tiến độ/SLA", "Thời gian phản hồi và khắc phục", "Mức phạt/bồi thường", "Ngoại lệ bất khả kháng hoặc phụ thuộc bên thuê"],
       "recommendation": "Làm rõ SLA/tiến độ bằng số đo cụ thể và chế tài nếu không đạt."
+    },
+    {
+      "id": "SERVICE-CONTRACT-CHANGE-REQUEST",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra thay đổi yêu cầu và phát sinh phí",
+      "legal_basis": "Bộ luật Dân sự 2015 — sửa đổi nội dung hợp đồng và thanh toán chi phí phát sinh theo thỏa thuận",
+      "triggers": ["thay đổi yêu cầu", "phát sinh", "bổ sung", "ngoài phạm vi", "scope", "change request", "dịch vụ"],
+      "required_keywords": ["change request", "yêu cầu thay đổi", "phê duyệt", "báo giá phát sinh", "điều chỉnh phí", "điều chỉnh tiến độ"],
+      "missing_facts": ["Ai được yêu cầu/phê duyệt thay đổi", "Cách báo giá phát sinh", "Ảnh hưởng tới tiến độ", "Cách ghi nhận thay đổi bằng văn bản"],
+      "recommendation": "Bổ sung quy trình change request để tránh làm thêm ngoài phạm vi nhưng không được thanh toán."
+    },
+    {
+      "id": "SERVICE-CONTRACT-DATA-SECURITY",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra bảo mật dữ liệu và an toàn thông tin",
+      "legal_basis": "Bộ luật Dân sự 2015 và quy định bảo vệ dữ liệu cá nhân/an toàn thông tin — nghĩa vụ bảo mật khi xử lý dữ liệu trong dịch vụ",
+      "triggers": ["dữ liệu", "khách hàng", "website", "hệ thống", "tài khoản", "truy cập", "thông tin cá nhân"],
+      "required_keywords": ["bảo mật", "an toàn thông tin", "phân quyền", "mã hóa", "sao lưu", "sự cố", "xóa dữ liệu", "bàn giao dữ liệu"],
+      "missing_facts": ["Biện pháp bảo mật", "Quyền truy cập", "Thông báo sự cố", "Sao lưu/xóa/bàn giao dữ liệu khi kết thúc"],
+      "recommendation": "Làm rõ tiêu chuẩn bảo mật, quyền truy cập và xử lý dữ liệu sau khi chấm dứt dịch vụ."
+    },
+    {
+      "id": "SERVICE-CONTRACT-SUBCONTRACTING",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra thuê thầu phụ/nhân sự hỗ trợ",
+      "legal_basis": "Bộ luật Dân sự 2015 — thực hiện nghĩa vụ bởi bên thứ ba và trách nhiệm của bên cung cấp dịch vụ",
+      "triggers": ["thầu phụ", "bên thứ ba", "nhân sự hỗ trợ", "thuê nhân sự", "đối tác", "cộng tác viên"],
+      "required_keywords": ["chấp thuận", "phê duyệt", "chịu trách nhiệm", "bảo mật", "thay thế nhân sự", "danh sách nhân sự"],
+      "missing_facts": ["Có cần chấp thuận thầu phụ không", "Trách nhiệm với lỗi của thầu phụ", "Yêu cầu bảo mật cho người thứ ba", "Quyền thay thế nhân sự"],
+      "recommendation": "Yêu cầu cơ chế phê duyệt thầu phụ và trách nhiệm của bên cung cấp với bên thứ ba."
+    },
+    {
+      "id": "SERVICE-CONTRACT-WARRANTY-SUPPORT",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra bảo hành, hỗ trợ sau bàn giao",
+      "legal_basis": "Bộ luật Dân sự 2015 — chất lượng dịch vụ, sửa lỗi và nghĩa vụ sau khi hoàn thành công việc theo thỏa thuận",
+      "triggers": ["bàn giao", "vận hành", "website", "phần mềm", "hỗ trợ", "bảo trì", "sửa lỗi"],
+      "required_keywords": ["bảo hành", "bảo trì", "hỗ trợ sau bàn giao", "thời gian hỗ trợ", "phạm vi hỗ trợ", "sửa lỗi", "phí bảo trì"],
+      "missing_facts": ["Thời hạn bảo hành/hỗ trợ", "Loại lỗi được sửa miễn phí", "Kênh hỗ trợ", "Phí bảo trì sau thời hạn"],
+      "recommendation": "Chốt phạm vi hỗ trợ sau bàn giao và chi phí bảo trì để tránh kỳ vọng mơ hồ."
+    },
+    {
+      "id": "SERVICE-CONTRACT-CUSTOMER-RESPONSIBILITIES",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra nghĩa vụ phối hợp của bên thuê dịch vụ",
+      "legal_basis": "Bộ luật Dân sự 2015 — quyền và nghĩa vụ của bên thuê dịch vụ trong việc cung cấp thông tin, phương tiện và phối hợp thực hiện",
+      "triggers": ["bên a cung cấp", "dữ liệu đầu vào", "tài khoản", "phối hợp", "phản hồi", "duyệt"],
+      "required_keywords": ["thời hạn cung cấp", "đầu mối phối hợp", "chậm phản hồi", "trách nhiệm bên thuê", "phụ thuộc bên a"],
+      "missing_facts": ["Bên thuê phải cung cấp gì", "Thời hạn phản hồi/phê duyệt", "Hậu quả khi bên thuê chậm phối hợp", "Đầu mối phối hợp"],
+      "recommendation": "Ghi rõ nghĩa vụ cung cấp dữ liệu/tài khoản/phản hồi của bên thuê và ảnh hưởng tới tiến độ/SLA."
+    },
+    {
+      "id": "SERVICE-CONTRACT-REPORTING",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra báo cáo dịch vụ và đo lường kết quả",
+      "legal_basis": "Bộ luật Dân sự 2015 — thực hiện công việc dịch vụ và xác nhận kết quả theo thỏa thuận",
+      "triggers": ["báo cáo", "hàng tháng", "kpi", "chỉ số", "dashboard", "đo lường"],
+      "required_keywords": ["mẫu báo cáo", "chu kỳ báo cáo", "kpi", "số liệu đối soát", "người nhận báo cáo"],
+      "missing_facts": ["Chu kỳ báo cáo", "Mẫu/chỉ số báo cáo", "Nguồn số liệu đối soát", "Người nhận/phê duyệt báo cáo"],
+      "recommendation": "Bổ sung chỉ số và chu kỳ báo cáo để có căn cứ nghiệm thu/thanh toán."
+    },
+    {
+      "id": "SERVICE-CONTRACT-SERVICE-CREDITS",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra hoàn tiền/service credit khi dịch vụ lỗi",
+      "legal_basis": "Bộ luật Dân sự 2015 — trách nhiệm do vi phạm nghĩa vụ, phạt vi phạm và bồi thường thiệt hại trong hợp đồng dịch vụ",
+      "triggers": ["hoàn tiền", "giảm phí", "service credit", "lỗi lặp lại", "không đạt sla", "gián đoạn"],
+      "required_keywords": ["công thức hoàn tiền", "mức giảm phí", "service credit", "giới hạn bồi thường", "ngoại lệ"],
+      "missing_facts": ["Khi nào được hoàn tiền/giảm phí", "Công thức tính", "Giới hạn trách nhiệm", "Ngoại lệ không áp dụng"],
+      "recommendation": "Chốt công thức hoàn tiền/service credit bằng số cụ thể nếu dịch vụ không đạt cam kết."
+    },
+    {
+      "id": "SERVICE-CONTRACT-EXIT-HANDOVER",
+      "domain": "Hợp đồng dịch vụ",
+      "title": "Cần kiểm tra bàn giao khi kết thúc dịch vụ",
+      "legal_basis": "Bộ luật Dân sự 2015 — chấm dứt hợp đồng, hoàn trả tài sản/tài liệu và nghĩa vụ sau khi kết thúc dịch vụ",
+      "triggers": ["kết thúc", "chấm dứt", "bàn giao", "hoàn trả", "xóa dữ liệu", "chuyển giao vận hành"],
+      "required_keywords": ["kế hoạch bàn giao", "danh sách tài sản", "xóa dữ liệu", "hỗ trợ chuyển giao", "thời hạn bàn giao"],
+      "missing_facts": ["Tài liệu/tài khoản/dữ liệu cần bàn giao", "Thời hạn bàn giao", "Hỗ trợ chuyển giao", "Xóa dữ liệu và thu hồi quyền truy cập"],
+      "recommendation": "Bổ sung checklist bàn giao khi kết thúc để tránh mất dữ liệu/tài khoản hoặc phụ thuộc nhà cung cấp."
     }
   ]
 }
