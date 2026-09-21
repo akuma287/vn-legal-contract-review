@@ -451,6 +451,7 @@ class AppTests(unittest.TestCase):
                                                         "BLLD2019-ART21-WAGES"
                                                     ],
                                                     "missing_facts": ["Mức lương"],
+                                                    "suggested_revision": "Ghi rõ mức lương, hình thức trả lương và thời hạn trả lương.",
                                                 }
                                             ],
                                             "clarifying_questions": [
@@ -483,6 +484,7 @@ class AppTests(unittest.TestCase):
             )
 
         self.assertEqual(len(result["clarifying_questions"]), 1)
+        self.assertIn("Ghi rõ mức lương", result["findings"][0]["suggested_revision"])
         question = result["clarifying_questions"][0]
         self.assertIn("Mức lương", question["question"])
         self.assertIn(question["clause_ref"], "Điều 3.1")
@@ -494,6 +496,43 @@ class AppTests(unittest.TestCase):
         )
         self.assertIn("Câu hỏi cần làm rõ", html)
         self.assertIn("Mức lương cụ thể", html)
+        self.assertIn("Đề xuất chỉnh sửa", html)
+        self.assertIn("Ghi rõ mức lương", html)
+
+    @patch("app.urlopen")
+    @patch.dict("os.environ", {"LEGAL_AI_API_KEY": "test-key"}, clear=False)
+    def test_ai_prompt_asks_for_suggested_revisions_and_ignores_pii_placeholders(self, mocked_urlopen):
+        captured: dict[str, str] = {}
+
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def read(self):
+                return json.dumps(
+                    {"choices": [{"message": {"content": json.dumps({"summary": "OK", "findings": [], "clarifying_questions": []}, ensure_ascii=False)}}]},
+                    ensure_ascii=False,
+                ).encode()
+
+        def fake_urlopen(request, timeout):
+            captured["body"] = request.data.decode()
+            return Response()
+
+        mocked_urlopen.side_effect = fake_urlopen
+        review_with_ai(
+            "Người lao động: Nguyễn Văn A. Công việc: Kế toán.",
+            screen_text("Công việc: Kế toán"),
+            consent=True,
+        )
+
+        body = captured["body"]
+        self.assertIn("suggested_revision", body)
+        self.assertIn("Đề xuất chỉnh sửa", body)
+        self.assertIn("Không coi placeholder PII", body)
+        self.assertIn("{{PERSON_NAME_", body)
 
     def test_ai_review_without_clarifying_questions_renders_no_section(self):
         result = {
