@@ -6,6 +6,7 @@ import base64
 import html
 import json
 import os
+import threading
 import time
 import uuid
 from email import policy
@@ -39,7 +40,10 @@ MAX_AI_TEXT_CHARS = 60_000
 DEFAULT_AI_BASE_URL = "http://103.160.2.141/v1"
 DEFAULT_AI_MODEL = "cx/gpt-5.6-terra"
 CHAT_SESSION_TTL_SECONDS = 30 * 60
+AI_JOB_TTL_SECONDS = 30 * 60
 CHAT_SESSIONS: dict[str, dict[str, Any]] = {}
+AI_JOBS: dict[str, dict[str, Any]] = {}
+JOBS_LOCK = threading.Lock()
 FORBIDDEN_AI_TERMS = (
     "hợp pháp",
     "vi phạm pháp luật",
@@ -408,6 +412,76 @@ def _clean_chat_sessions(now: float | None = None) -> None:
         CHAT_SESSIONS.pop(session_id, None)
 
 
+def _clean_ai_jobs(now: float | None = None) -> None:
+    now = now or time.time()
+    with JOBS_LOCK:
+        expired = [
+            job_id
+            for job_id, job in AI_JOBS.items()
+            if job["expires_at"] <= now
+        ]
+        for job_id in expired:
+            AI_JOBS.pop(job_id, None)
+
+
+def _create_ai_job_record(
+    filename: str,
+    contract_text: str,
+    result: dict[str, Any],
+) -> str:
+    _clean_ai_jobs()
+    job_id = uuid.uuid4().hex
+    with JOBS_LOCK:
+        AI_JOBS[job_id] = {
+            "status": "pending",
+            "filename": filename,
+            "contract_text": contract_text,
+            "result": result,
+            "ai_review": None,
+            "session_id": "",
+            "error": "",
+            "expires_at": time.time() + AI_JOB_TTL_SECONDS,
+        }
+    return job_id
+
+
+def _run_ai_review_job(job_id: str) -> None:
+    with JOBS_LOCK:
+        job = AI_JOBS.get(job_id)
+        if not job:
+            return
+        job["status"] = "running"
+    try:
+        ai_review = review_with_ai(job["contract_text"], job["result"], consent=True)
+    except Exception as error:  # AI is optional; keep rule-engine report usable.
+        with JOBS_LOCK:
+            if job_id in AI_JOBS:
+                AI_JOBS[job_id]["status"] = "error"
+                AI_JOBS[job_id]["error"] = str(error)
+        return
+    session_id = create_chat_session(
+        job["filename"],
+        job["contract_text"],
+        job["result"],
+        ai_review,
+    )
+    with JOBS_LOCK:
+        if job_id in AI_JOBS:
+            AI_JOBS[job_id]["status"] = "done"
+            AI_JOBS[job_id]["ai_review"] = ai_review
+            AI_JOBS[job_id]["session_id"] = session_id
+
+
+def start_ai_review_job(
+    filename: str,
+    contract_text: str,
+    result: dict[str, Any],
+) -> str:
+    job_id = _create_ai_job_record(filename, contract_text, result)
+    threading.Thread(target=_run_ai_review_job, args=(job_id,), daemon=True).start()
+    return job_id
+
+
 def create_chat_session(
     filename: str,
     contract_text: str,
@@ -572,11 +646,47 @@ def render_chat_page(session_id: str) -> str:
     )
 
 
+def render_ai_job_page(job_id: str) -> str:
+    _clean_ai_jobs()
+    with JOBS_LOCK:
+        job = dict(AI_JOBS.get(job_id) or {})
+    if not job:
+        return render_home("Phiên AI review đã hết hạn. Vui lòng upload lại hợp đồng.")
+    if job["status"] == "done":
+        return render_report(
+            job["result"],
+            job["filename"],
+            ai_review=job["ai_review"],
+            session_id=job.get("session_id") or None,
+        )
+    if job["status"] == "error":
+        error = html.escape(job.get("error") or "AI review không hoàn tất.")
+        return render_report(
+            job["result"],
+            job["filename"],
+            error_html=f"<p class='error'><b>AI review lỗi:</b> {error}</p><p>Kết quả rule engine vẫn dùng được.</p>",
+        )
+    return _page(
+        "Đang rà soát bằng AI",
+        "<main class='shell'>"
+        "<section class='hero compact'>"
+        "<p class='eyebrow'>AI review</p>"
+        "<h1>Đang rà soát bằng AI</h1>"
+        f"<p class='lead'><b>Tệp:</b> {html.escape(job['filename'])}</p>"
+        "<p>Trang tự kiểm tra lại mỗi 5 giây. Bạn có thể để tab này mở.</p>"
+        "<aside>Rule engine đã chạy xong. AI review đang chạy nền nên Cloudflare không còn phải chờ request dài.</aside>"
+        "</section>"
+        "</main>",
+        head_extra=f"<meta http-equiv='refresh' content='5;url=/job?id={html.escape(job_id, quote=True)}'>",
+    )
+
+
 def render_report(
     result: dict[str, Any],
     filename: str,
     ai_review: dict[str, Any] | None = None,
     session_id: str | None = None,
+    error_html: str = "",
 ) -> str:
     """Render findings with escaping; never render contract content."""
     sources = result.get("sources", [result["source"]])
@@ -606,6 +716,7 @@ def render_report(
         "</div>"
         f"<aside>{html.escape(result['disclaimer'])}</aside>"
         "</section>"
+        f"{error_html}"
         "<section class='panel source-panel'>"
         "<div class='section-heading'><p>Nguồn luật</p><h2>Căn cứ pháp lý đang dùng</h2></div>"
         f"<ul>{source_items}</ul>"
@@ -616,12 +727,13 @@ def render_report(
     )
 
 
-def _page(title: str, body: str) -> str:
+def _page(title: str, body: str, head_extra: str = "") -> str:
     return f"""<!doctype html>
 <html lang='vi'>
 <head>
 <meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
+{head_extra}
 <title>{html.escape(title)}</title>
 <style>
 :root{{color-scheme:light;--ink:#172033;--muted:#64748b;--paper:#ffffff;--bg:#f6f0e8;--line:#e6dccf;--accent:#8a4b2a;--accent-strong:#5f2e18;--blue:#1d4ed8;--danger:#991b1b;--shadow:0 24px 70px rgba(95,46,24,.12)}}
@@ -703,10 +815,15 @@ def _parse_multipart(content_type: str, body: bytes) -> tuple[str, bytes, bool]:
 
 class ScreeningHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
-        if self.path == "/healthz":
+        parsed = urlparse(self.path)
+        if parsed.path == "/healthz":
             self._send_text(200, "ok")
             return
-        if self.path != "/":
+        if parsed.path == "/job":
+            job_id = (parse_qs(parsed.query).get("id") or [""])[0]
+            self._send_html(200, render_ai_job_page(job_id))
+            return
+        if parsed.path != "/":
             self.send_error(404)
             return
         CHAT_SESSIONS.clear()
@@ -733,9 +850,11 @@ class ScreeningHandler(BaseHTTPRequestHandler):
             )
             contract_text = extract_contract_text(filename, content)
             result = screen_text(contract_text)
-            ai_review = review_with_ai(contract_text, result, consent=True) if ai_consent else None
-            session_id = create_chat_session(filename, contract_text, result, ai_review) if ai_review else None
-            self._send_html(200, render_report(result, filename, ai_review, session_id=session_id))
+            if ai_consent:
+                job_id = start_ai_review_job(filename, contract_text, result)
+                self._send_html(303, render_ai_job_page(job_id), location=f"/job?id={job_id}")
+                return
+            self._send_html(200, render_report(result, filename))
         except (PermissionError, RuntimeError, ValueError) as error:
             self._send_html(400, render_home(str(error)))
 
@@ -756,9 +875,11 @@ class ScreeningHandler(BaseHTTPRequestHandler):
     def log_message(self, _format: str, *_args: object) -> None:
         """Do not log request path, filenames, or contract details."""
 
-    def _send_html(self, status: int, content: str) -> None:
+    def _send_html(self, status: int, content: str, location: str | None = None) -> None:
         encoded = content.encode("utf-8")
         self.send_response(status)
+        if location:
+            self.send_header("Location", location)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(encoded)))
         self.send_header("Cache-Control", "no-store")

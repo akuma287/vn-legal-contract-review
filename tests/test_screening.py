@@ -7,12 +7,16 @@ from docx import Document
 from pypdf import PdfReader, PdfWriter
 
 from app import (
+    AI_JOBS,
     CHAT_SESSIONS,
     ScreeningHandler,
+    _create_ai_job_record,
+    _run_ai_review_job,
     chat_with_ai,
     create_chat_session,
     extract_contract_text,
     make_report_pdf,
+    render_ai_job_page,
     render_chat_page,
     render_home,
     render_report,
@@ -344,6 +348,80 @@ class AppTests(unittest.TestCase):
         self.assertIn("download='contract-review-report.pdf'", html)
         self.assertIn("data:application/pdf;base64,", html)
         self.assertIn("Tải báo cáo PDF", html)
+
+    def test_screen_with_ai_consent_redirects_to_background_job(self):
+        body = (
+            b"--x\r\n"
+            b"Content-Disposition: form-data; name=\"contract\"; filename=\"contract.txt\"\r\n"
+            b"Content-Type: text/plain\r\n\r\n"
+            b"Cong viec: Ke toan\r\n"
+            b"--x\r\n"
+            b"Content-Disposition: form-data; name=\"ai_consent\"\r\n\r\n"
+            b"yes\r\n"
+            b"--x--\r\n"
+        )
+        sent: dict[str, object] = {"headers": {}}
+
+        class Handler(ScreeningHandler):
+            def send_response(self, code, message=None): sent["status"] = code
+            def send_header(self, keyword, value): sent["headers"][keyword] = value
+            def end_headers(self): pass
+
+        handler = object.__new__(Handler)
+        handler.headers = {
+            "Content-Length": str(len(body)),
+            "Content-Type": "multipart/form-data; boundary=x",
+            "Host": "127.0.0.1:8000",
+        }
+        handler.rfile = BytesIO(body)
+        handler.wfile = BytesIO()
+
+        with patch("app.start_ai_review_job", return_value="job123") as mocked_job:
+            handler._handle_screen()
+
+        self.assertEqual(sent["status"], 303)
+        self.assertEqual(sent["headers"]["Location"], "/job?id=job123")
+        mocked_job.assert_called_once()
+
+    def test_ai_job_page_auto_refreshes_until_review_finishes(self):
+        AI_JOBS.clear()
+        result = screen_text("Công việc: Kế toán")
+        job_id = _create_ai_job_record("contract.txt", "Công việc: Kế toán", result)
+
+        html = render_ai_job_page(job_id)
+
+        self.assertIn("Đang rà soát bằng AI", html)
+        self.assertIn("http-equiv='refresh'", html)
+        self.assertIn(f"/job?id={job_id}", html)
+
+    def test_ai_job_page_renders_report_when_review_finishes(self):
+        AI_JOBS.clear()
+        result = screen_text("Công việc: Kế toán")
+        ai_review = {"summary": "OK", "findings": [], "clarifying_questions": []}
+        job_id = _create_ai_job_record("contract.txt", "Công việc: Kế toán", result)
+        AI_JOBS[job_id]["status"] = "done"
+        AI_JOBS[job_id]["ai_review"] = ai_review
+        AI_JOBS[job_id]["session_id"] = create_chat_session("contract.txt", "Công việc: Kế toán", result, ai_review)
+
+        html = render_ai_job_page(job_id)
+
+        self.assertIn("Kết quả rà soát sơ bộ", html)
+        self.assertIn("Hỏi tiếp về hợp đồng", html)
+        self.assertNotIn("http-equiv='refresh'", html)
+
+    def test_ai_review_job_stores_error_without_blocking_report(self):
+        AI_JOBS.clear()
+        result = screen_text("Công việc: Kế toán")
+        job_id = _create_ai_job_record("contract.txt", "Công việc: Kế toán", result)
+
+        with patch("app.review_with_ai", side_effect=RuntimeError("Không kết nối được AI provider.")):
+            _run_ai_review_job(job_id)
+
+        self.assertEqual(AI_JOBS[job_id]["status"], "error")
+        self.assertIn("Không kết nối", AI_JOBS[job_id]["error"])
+        html = render_ai_job_page(job_id)
+        self.assertIn("Kết quả rule engine", html)
+        self.assertIn("Không kết nối", html)
 
     def test_ai_review_requires_explicit_consent(self):
         with self.assertRaisesRegex(PermissionError, "đồng ý"):
