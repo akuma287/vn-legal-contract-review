@@ -61,13 +61,14 @@ FORBIDDEN_AI_TERMS = (
 
 def _register_pdf_font() -> str:
     for font_path in (
-        "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
-        "/System/Library/Fonts/Supplemental/Arial.ttf",
-        "/Library/Fonts/Arial Unicode.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        Path(__file__).with_name("assets") / "fonts" / "NotoSans-Regular.ttf",
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+        Path("/System/Library/Fonts/Supplemental/Arial.ttf"),
+        Path("/System/Library/Fonts/Supplemental/Arial Unicode.ttf"),
+        Path("/Library/Fonts/Arial Unicode.ttf"),
     ):
-        if Path(font_path).is_file():
-            pdfmetrics.registerFont(TTFont("ContractReport", font_path))
+        if font_path.is_file():
+            pdfmetrics.registerFont(TTFont("ContractReport", str(font_path)))
             return "ContractReport"
     return "Helvetica"
 

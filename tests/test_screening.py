@@ -335,9 +335,16 @@ class AppTests(unittest.TestCase):
         self.assertTrue(pdf.startswith(b"%PDF"))
         reader = PdfReader(BytesIO(pdf))
         text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        fonts = [
+            str(font.get_object().get("/BaseFont"))
+            for page in reader.pages
+            for font in ((page.get("/Resources") or {}).get("/Font") or {}).values()
+        ]
         self.assertIn("Kết quả rà soát sơ bộ", text)
         self.assertIn("contract.docx", text)
         self.assertIn("Bộ luật Dân sự 2015", text)
+        self.assertNotIn("■", text)
+        self.assertTrue(any("NotoSans" in font for font in fonts))
 
     def test_report_includes_pdf_download_button(self):
         html = render_report(
