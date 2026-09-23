@@ -57,6 +57,10 @@ FORBIDDEN_AI_TERMS = (
     "invalid",
     "enforceable",
 )
+HUMAN_DECISION_DISCLAIMER = (
+    "Các đề xuất chỉ là lời khuyên mang tính chất tham khảo; "
+    "mọi quyết định vẫn là CON NGƯỜI sau khi đối chiếu bản gốc và bối cảnh thực tế."
+)
 
 
 def _register_pdf_font() -> str:
@@ -135,6 +139,46 @@ def _pdf_text(value: object) -> str:
     return html.escape(str(value or "")).replace("\n", "<br/>")
 
 
+def calculate_contract_score(
+    result: dict[str, Any],
+    ai_review: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    rule_count = len(result.get("findings", []))
+    ai_count = len((ai_review or {}).get("findings", []))
+    score = max(0, 100 - rule_count * 4 - ai_count * 6)
+    if score >= 85:
+        level = "Tốt"
+        summary = "Ít điểm cần kiểm tra; vẫn cần đọc lại trước khi ký."
+    elif score >= 70:
+        level = "Tạm chấp nhận"
+        summary = "Có một số điểm cần làm rõ nhưng chưa quá dày đặc."
+    elif score >= 50:
+        level = "Cần rà soát kỹ"
+        summary = "Nhiều điểm cần kiểm tra; nên chỉnh trước khi ký."
+    else:
+        level = "Rủi ro cao"
+        summary = "Quá nhiều điểm cần kiểm tra; chưa nên ký nếu chưa rà soát lại."
+    return {
+        "value": score,
+        "level": level,
+        "summary": summary,
+        "explanation": f"Trừ điểm từ {rule_count} rule-engine finding và {ai_count} AI finding.",
+    }
+
+
+def _score_html(score: dict[str, Any]) -> str:
+    return (
+        "<section class='panel score-panel'>"
+        "<div class='section-heading'><p>Risk score</p><h2>Điểm tổng quan</h2></div>"
+        "<div class='score-card'>"
+        f"<div><b>{score['value']}/100</b><span>{html.escape(score['level'])}</span></div>"
+        f"<p><b>Đánh giá nhanh:</b> {html.escape(score['summary'])}</p>"
+        f"<small>{html.escape(score['explanation'])}</small>"
+        "</div>"
+        "</section>"
+    )
+
+
 def make_report_pdf(
     result: dict[str, Any],
     filename: str,
@@ -150,9 +194,13 @@ def make_report_pdf(
     heading.fontName = PDF_FONT
     heading.textColor = colors.HexColor("#5f2e18")
     styles["Title"].fontName = PDF_FONT
+    score = calculate_contract_score(result, ai_review)
     story: list[Any] = [Paragraph("Kết quả rà soát sơ bộ", styles["Title"])]
     story.append(Paragraph(f"Tệp: {_pdf_text(filename)}", normal))
+    story.append(Paragraph(f"Điểm tổng quan: {score['value']}/100 — {_pdf_text(score['level'])}", heading))
+    story.append(Paragraph(f"Đánh giá nhanh: {_pdf_text(score['summary'])}", normal))
     story.append(Paragraph(_pdf_text(result["disclaimer"]), normal))
+    story.append(Paragraph(_pdf_text(HUMAN_DECISION_DISCLAIMER), normal))
     story.append(Spacer(1, 5 * mm))
     story.append(Paragraph("Căn cứ pháp lý đang dùng", heading))
     for source in result.get("sources", [result["source"]]):
@@ -674,8 +722,7 @@ def render_ai_job_page(job_id: str) -> str:
         "<p class='eyebrow'>AI review</p>"
         "<h1>Đang rà soát bằng AI</h1>"
         f"<p class='lead'><b>Tệp:</b> {html.escape(job['filename'])}</p>"
-        "<p>Trang tự kiểm tra lại mỗi 5 giây. Bạn có thể để tab này mở.</p>"
-        "<aside>Rule engine đã chạy xong. AI review đang chạy nền nên Cloudflare không còn phải chờ request dài.</aside>"
+        "<aside>Trang tự kiểm tra lại mỗi 5 giây. Bạn có thể để tab này mở.</aside>"
         "</section>"
         "</main>",
         head_extra=f"<meta http-equiv='refresh' content='5;url=/job?id={html.escape(job_id, quote=True)}'>",
@@ -693,6 +740,7 @@ def render_report(
     sources = result.get("sources", [result["source"]])
     finding_count = len(result["findings"])
     ai_count = len(ai_review["findings"]) if ai_review else 0
+    score = calculate_contract_score(result, ai_review)
     source_items = "".join(
         "<li>"
         f"{html.escape(source['instrument'])} ({html.escape(source['number'])}), "
@@ -715,8 +763,9 @@ def render_report(
         f"<div><b>{ai_count}</b><span>điểm AI bổ sung</span></div>"
         f"<div><b>{html.escape(result['rule_pack_version'])}</b><span>rule pack</span></div>"
         "</div>"
-        f"<aside>{html.escape(result['disclaimer'])}</aside>"
+        f"<aside>{html.escape(result['disclaimer'])}<br>{html.escape(HUMAN_DECISION_DISCLAIMER)}</aside>"
         "</section>"
+        f"{_score_html(score)}"
         f"{error_html}"
         "<section class='panel source-panel'>"
         "<div class='section-heading'><p>Nguồn luật</p><h2>Căn cứ pháp lý đang dùng</h2></div>"
@@ -745,7 +794,7 @@ a{{color:var(--accent-strong);text-underline-offset:3px}} h1,h2,h3,p{{margin-top
 .upload{{display:grid;gap:16px;margin-top:22px}} label{{display:block;font-weight:700}} .hint,small{{display:block;color:var(--muted);font-weight:500;margin-top:6px}} input[type=file],textarea{{width:100%;margin-top:10px;border:1px dashed #c9b6a3;border-radius:18px;background:#fffbf7;padding:16px;color:var(--ink)}} .check{{display:flex;gap:12px;align-items:flex-start;border:1px solid #f1dfcf;background:#fffaf4;border-radius:18px;padding:15px;line-height:1.45}} .check input{{margin-top:4px;min-width:18px;min-height:18px}} button,.button-link{{min-height:46px;border:0;border-radius:999px;background:var(--accent-strong);color:white;font:800 1rem/1 ui-sans-serif,system-ui,sans-serif;padding:0 22px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}} button:focus-visible,a:focus-visible,input:focus-visible{{outline:3px solid #f59e0b;outline-offset:3px}} .error{{color:var(--danger);background:#fef2f2;border:1px solid #fecaca;border-radius:16px;padding:12px 14px}}
 #loading-overlay{{display:none;position:fixed;inset:0;z-index:999;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);place-items:center;text-align:center;color:white;padding:24px}} body.is-loading #loading-overlay{{display:grid}} body.is-loading .shell{{filter:blur(2px);opacity:.45;pointer-events:none}} #loading-overlay .box{{background:rgba(95,46,24,.92);border:1px solid rgba(255,255,255,.25);border-radius:24px;padding:28px;max-width:420px;box-shadow:0 24px 70px rgba(0,0,0,.22)}} #loading-overlay b{{display:block;font-size:1.35rem;margin-bottom:8px}}
 .chat-log{{max-height:460px;overflow-y:auto;border:1px solid var(--line);border-radius:22px;background:#fffaf4;padding:14px;display:grid;gap:12px;scroll-behavior:smooth}} .chat-message{{margin:0}}
-.panel{{padding:26px;margin-top:18px}} .section-heading{{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}} .section-heading h2,.section-heading p{{margin-bottom:0}} .stats{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}} .stats div{{border:1px solid var(--line);border-radius:18px;background:#fffaf4;padding:16px}} .stats b{{display:block;font-size:1.7rem;letter-spacing:-.04em}} .stats span{{display:block;color:var(--muted)}} aside{{background:#eff6ff;border:1px solid #bfdbfe;border-radius:18px;padding:16px;color:#1e3a8a}} .finding{{margin-top:14px}} .finding-top{{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}} .badge{{display:inline-flex;align-items:center;min-height:28px;border-radius:999px;background:#ffedd5;color:#9a3412;font-weight:800;font-size:.82rem;padding:4px 10px}} .list-block{{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px}} .list-block ul,.questions ol{{margin-bottom:0}} .empty{{color:var(--muted)}} .source-panel p{{margin-bottom:0}} .back-link{{display:inline-flex;margin-bottom:16px;font-weight:700}} .questions{{margin-top:18px;border-top:1px solid var(--line);padding-top:18px}}
+.panel{{padding:26px;margin-top:18px}} .section-heading{{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}} .section-heading h2,.section-heading p{{margin-bottom:0}} .stats{{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}} .stats div{{border:1px solid var(--line);border-radius:18px;background:#fffaf4;padding:16px}} .stats b{{display:block;font-size:1.7rem;letter-spacing:-.04em}} .stats span{{display:block;color:var(--muted)}} .score-card{{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:center;border:1px solid var(--line);border-radius:22px;background:#fffaf4;padding:20px}} .score-card b{{display:block;font-size:3rem;line-height:1;letter-spacing:-.06em;color:var(--accent-strong)}} .score-card span{{display:block;margin-top:8px;font-weight:800;color:var(--accent)}} aside{{background:#eff6ff;border:1px solid #bfdbfe;border-radius:18px;padding:16px;color:#1e3a8a}} .finding{{margin-top:14px}} .finding-top{{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}} .badge{{display:inline-flex;align-items:center;min-height:28px;border-radius:999px;background:#ffedd5;color:#9a3412;font-weight:800;font-size:.82rem;padding:4px 10px}} .list-block{{background:#f8fafc;border:1px solid #e2e8f0;border-radius:16px;padding:14px}} .list-block ul,.questions ol{{margin-bottom:0}} .empty{{color:var(--muted)}} .source-panel p{{margin-bottom:0}} .back-link{{display:inline-flex;margin-bottom:16px;font-weight:700}} .questions{{margin-top:18px;border-top:1px solid var(--line);padding-top:18px}}
 @media (max-width:820px){{body{{padding:18px 12px}} .hero{{grid-template-columns:1fr;padding:22px;border-radius:22px}} .panel{{border-radius:22px;padding:20px}} .stats{{grid-template-columns:1fr}} .section-heading{{display:block}}}}
 </style>
 </head><body>{body}<div id='loading-overlay' role='status' aria-live='polite'><div class='box'><b>Đang rà soát hợp đồng</b><span>Vui lòng chờ, AI review có thể mất vài phút.</span></div></div><script>var chatLog=document.querySelector('.chat-log');if(chatLog){{chatLog.scrollTop = chatLog.scrollHeight;}}document.querySelectorAll('form').forEach(function(form){{form.addEventListener('submit',function(){{document.body.classList.add('is-loading');var button=form.querySelector('button');if(button){{button.disabled=true;button.textContent='Đang xử lý...';}}}});}});</script></body></html>"""

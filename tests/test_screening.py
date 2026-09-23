@@ -12,6 +12,7 @@ from app import (
     ScreeningHandler,
     _create_ai_job_record,
     _run_ai_review_job,
+    calculate_contract_score,
     chat_with_ai,
     create_chat_session,
     extract_contract_text,
@@ -240,6 +241,27 @@ class AppTests(unittest.TestCase):
         self.assertIn("&lt;img", html)
         self.assertNotIn("<img src=x", html)
         self.assertIn("Kết quả là sàng lọc sơ bộ", html)
+        self.assertIn("tham khảo", html)
+        self.assertIn("mọi quyết định vẫn là CON NGƯỜI", html)
+
+    def test_contract_score_penalizes_rule_and_ai_findings(self):
+        result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
+        score = calculate_contract_score(result, {"summary": "OK", "findings": [{}, {}]})
+
+        self.assertLess(score["value"], 100)
+        self.assertGreaterEqual(score["value"], 0)
+        self.assertIn(score["level"], {"Tốt", "Tạm chấp nhận", "Cần rà soát kỹ", "Rủi ro cao"})
+        self.assertIn("finding", score["explanation"])
+
+    def test_report_shows_contract_score_and_human_decision_disclaimer(self):
+        ai_review = {"summary": "OK", "findings": [], "clarifying_questions": []}
+        html = render_report(screen_text("Công việc: Kế toán"), "contract.txt", ai_review=ai_review)
+
+        self.assertIn("Điểm tổng quan", html)
+        self.assertIn("/100", html)
+        self.assertIn("Đánh giá nhanh", html)
+        self.assertIn("tham khảo", html)
+        self.assertIn("CON NGƯỜI", html)
 
     def test_report_lists_legal_sources_but_hides_rule_checks(self):
         html = render_report(
@@ -343,6 +365,9 @@ class AppTests(unittest.TestCase):
         self.assertIn("Kết quả rà soát sơ bộ", text)
         self.assertIn("contract.docx", text)
         self.assertIn("Bộ luật Dân sự 2015", text)
+        self.assertIn("Điểm tổng quan", text)
+        self.assertIn("/100", text)
+        self.assertIn("CON NGƯỜI", text)
         self.assertNotIn("■", text)
         self.assertTrue(any("NotoSans" in font for font in fonts))
 
@@ -400,6 +425,8 @@ class AppTests(unittest.TestCase):
         self.assertIn("Đang rà soát bằng AI", html)
         self.assertIn("http-equiv='refresh'", html)
         self.assertIn(f"/job?id={job_id}", html)
+        self.assertIn("<aside>Trang tự kiểm tra lại mỗi 5 giây. Bạn có thể để tab này mở.</aside>", html)
+        self.assertNotIn("Cloudflare không còn phải chờ", html)
 
     def test_ai_job_page_renders_report_when_review_finishes(self):
         AI_JOBS.clear()
