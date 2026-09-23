@@ -63,6 +63,14 @@ HUMAN_DECISION_DISCLAIMER = (
     "mọi quyết định vẫn là CON NGƯỜI sau khi đối chiếu bản gốc và bối cảnh thực tế."
 )
 CJK_RE = re.compile(r"[\u3400-\u9fff]+")
+PII_PLACEHOLDER_RE = re.compile(r"\{\{(?:PERSON_NAME|PHONE_NUMBER|EMAIL_ADDRESS|VN_CCCD|TAX_ID|BANK_ACCOUNT|ADDRESS)_\d+\}\}", re.IGNORECASE)
+PLACEHOLDER_NOISE_TERMS = (
+    "placeholder",
+    "thông tin thực",
+    "thay thế",
+    "điền trước khi ký",
+    "điền đầy đủ",
+)
 VIETNAMESE_ONLY_INSTRUCTION = (
     "Chỉ viết tiếng Việt; không dùng tiếng Trung/tiếng Hoa/Hán tự trong bất kỳ trường JSON nào. "
     "Nếu nguồn model sinh cụm tiếng Trung, hãy diễn đạt lại bằng tiếng Việt trước khi trả lời. "
@@ -278,6 +286,13 @@ def _safe_ai_text(value: object, fallback: str) -> str:
     return text[:1_500]
 
 
+def _is_pii_placeholder_noise(*values: object) -> bool:
+    text = " ".join(str(value or "") for value in values).casefold()
+    return bool(PII_PLACEHOLDER_RE.search(text)) and any(
+        term in text for term in PLACEHOLDER_NOISE_TERMS
+    )
+
+
 def _validate_ai_review(raw: object, allowed_citations: dict[str, str]) -> dict[str, Any]:
     if not isinstance(raw, dict):
         raise ValueError("AI trả về dữ liệu không đúng cấu trúc JSON.")
@@ -298,6 +313,13 @@ def _validate_ai_review(raw: object, allowed_citations: dict[str, str]) -> dict[
             if isinstance(citation_id, str) and citation_id in allowed_citations
         ]
         if not citations:
+            continue
+        if _is_pii_placeholder_noise(
+            item.get("title"),
+            item.get("issue"),
+            item.get("suggested_revision"),
+            " ".join(str(fact) for fact in item.get("missing_facts", []) if isinstance(fact, str)),
+        ):
             continue
         title = _safe_ai_text(item.get("title"), "Cần kiểm tra nội dung hợp đồng")
         if not title.startswith("Cần kiểm tra"):
@@ -344,6 +366,12 @@ def _validate_clarifying_questions(raw: object) -> list[dict[str, str]]:
     questions = []
     for item in raw[:10]:
         if not isinstance(item, dict):
+            continue
+        if _is_pii_placeholder_noise(
+            item.get("question"),
+            item.get("clause_ref"),
+            item.get("why_important"),
+        ):
             continue
         question = _safe_ai_text(item.get("question"), "").strip()
         if not question:
@@ -443,7 +471,8 @@ def review_with_ai(
             "Mỗi finding phải có suggested_revision là Đề xuất chỉnh sửa ngắn, thực dụng, có thể đưa vào hợp đồng; "
             "không bịa số tiền/ngày/thông tin chưa có, dùng placeholder như [số ngày], [số tiền], [phụ lục] khi cần. "
             "Không coi placeholder PII như {{PERSON_NAME_1}}, {{PHONE_NUMBER_1}}, {{EMAIL_ADDRESS_1}}, {{VN_CCCD_1}}, "
-            "{{TAX_ID_1}}, {{BANK_ACCOUNT_1}}, {{ADDRESS_1}} là lỗi hợp đồng; chỉ đánh giá cấu trúc điều khoản quanh placeholder. "
+            "{{TAX_ID_1}}, {{BANK_ACCOUNT_1}}, {{ADDRESS_1}} là lỗi hợp đồng; không tạo finding/câu hỏi yêu cầu thay placeholder bằng thông tin thật; "
+            "chỉ đánh giá cấu trúc điều khoản quanh placeholder. "
             "clarifying_questions: danh sách tối đa 8 câu hỏi NGƯỜI DÙNG cần hỏi lại bên kia TRƯỚC KHI KÝ, "
             "ưu tiên: (1) khoản tiền/hoàn trả/phạt không có số cụ thể hoặc dẫn chiếu phụ lục chưa có, "
             "(2) tiêu chí định tính mơ hồ được dùng làm căn cứ chế tài ('không nghiêm túc', 'ảnh hưởng uy tín'...), "

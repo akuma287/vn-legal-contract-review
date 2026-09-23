@@ -595,6 +595,80 @@ class AppTests(unittest.TestCase):
         self.assertIn("Theo Điều 4.2.3", result["findings"][0]["issue"])
         self.assertIn("Bên B sẽ cung cấp", result["clarifying_questions"][0]["question"])
 
+    @patch("app.urlopen")
+    @patch.dict("os.environ", {"LEGAL_AI_API_KEY": "test-key"}, clear=False)
+    def test_ai_review_drops_placeholder_only_findings_and_questions(self, mocked_urlopen):
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def read(self):
+                return json.dumps(
+                    {
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps(
+                                        {
+                                            "summary": "Sàng lọc sơ bộ.",
+                                            "findings": [
+                                                {
+                                                    "title": "Cần kiểm tra: Sử dụng placeholder không nhất quán",
+                                                    "issue": "Trong hợp đồng xuất hiện {{PERSON_NAME_1}}, {{ADDRESS_1}}, {{TAX_ID_1}} chưa thay thế bằng thông tin thực.",
+                                                    "risk_level": "review",
+                                                    "legal_basis_ids": ["BLLD2019-ART21-WAGES"],
+                                                    "missing_facts": ["{{PERSON_NAME_1}}", "{{ADDRESS_1}}"],
+                                                    "suggested_revision": "Thay tất cả placeholder bằng thông tin thực tế.",
+                                                },
+                                                {
+                                                    "title": "Cần kiểm tra mức lương",
+                                                    "issue": "Mức lương chưa rõ.",
+                                                    "risk_level": "review",
+                                                    "legal_basis_ids": ["BLLD2019-ART21-WAGES"],
+                                                    "missing_facts": ["Mức lương"],
+                                                    "suggested_revision": "Ghi rõ mức lương và thời hạn trả lương.",
+                                                },
+                                            ],
+                                            "clarifying_questions": [
+                                                {
+                                                    "question": "Vui lòng cung cấp thông tin đầy đủ để thay thế {{PERSON_NAME_1}} và {{ADDRESS_1}}.",
+                                                    "clause_ref": "Điều chứa placeholder",
+                                                    "why_important": "Tránh mơ hồ về danh tính bên ký.",
+                                                },
+                                                {
+                                                    "question": "Mức lương cụ thể là bao nhiêu?",
+                                                    "clause_ref": "Điều 3.1",
+                                                    "why_important": "Rủi ro tài chính trực tiếp.",
+                                                },
+                                            ],
+                                        },
+                                        ensure_ascii=False,
+                                    )
+                                }
+                            }
+                        ]
+                    },
+                    ensure_ascii=False,
+                ).encode()
+
+        mocked_urlopen.return_value = Response()
+        result = review_with_ai(
+            "Người lao động: {{PERSON_NAME_1}}. Công việc: Kế toán.",
+            screen_text("Công việc: Kế toán"),
+            consent=True,
+        )
+
+        dumped = json.dumps(result, ensure_ascii=False)
+        self.assertNotIn("placeholder", dumped.casefold())
+        self.assertNotIn("{{PERSON_NAME_1}}", dumped)
+        self.assertEqual(len(result["findings"]), 1)
+        self.assertIn("mức lương", result["findings"][0]["title"].casefold())
+        self.assertEqual(len(result["clarifying_questions"]), 1)
+        self.assertIn("mức lương", result["clarifying_questions"][0]["question"].casefold())
+
     def test_ai_review_persists_clarifying_questions(self):
         class Response:
             def __enter__(self):
