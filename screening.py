@@ -95,6 +95,21 @@ def screen_text(text: str, rule_pack: dict[str, Any] | None = None) -> dict[str,
                 )
             )
 
+        probation_duration_rule = pack.get("probation_duration_rule")
+        probation_duration_match = re.search(
+            r"(?:thử việc[^\n,.]{0,80}?(\d{1,3})\s*ngày|(\d{1,3})\s*ngày[^\n,.]{0,80}?thử việc)",
+            normalized,
+        )
+        if probation_duration_rule and probation_duration_match:
+            days = next(int(value) for value in probation_duration_match.groups() if value)
+            if days > 60:
+                findings.append(
+                    _finding(
+                        probation_duration_rule,
+                        f"Phát hiện thời gian thử việc {days} ngày. Cần kiểm tra chức danh có thuộc ngoại lệ được thử việc trên 60 ngày hay không.",
+                    )
+                )
+
     primary_pack = rule_packs[0]
     return {
         "disclaimer": primary_pack.get(

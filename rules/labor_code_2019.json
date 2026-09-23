@@ -13,7 +13,9 @@
     "người sử dụng lao động",
     "công việc:",
     "tiền lương",
-    "mức lương"
+    "mức lương",
+    "thư mời làm việc",
+    "thử việc"
   ],
   "required_content_rules": [
     {
@@ -174,6 +176,16 @@
     "title": "Cần kiểm tra thời hạn hợp đồng xác định",
     "legal_basis": "Điều 20 khoản 1 điểm b Bộ luật Lao động 2019",
     "recommendation": "Đối chiếu loại hợp đồng, thời hạn ghi nhận và ngoại lệ áp dụng trước khi đưa ra kết luận."
+  },
+  "probation_duration_rule": {
+    "id": "BLLD2019-ART25-PROBATION-DURATION",
+    "title": "Cần kiểm tra thời gian thử việc trên 60 ngày",
+    "legal_basis": "Điều 25 Bộ luật Lao động 2019",
+    "missing_facts": [
+      "Chức danh/cấp bậc làm căn cứ áp dụng thời gian thử việc",
+      "Căn cứ áp dụng thời gian thử việc trên 60 ngày nếu có"
+    ],
+    "recommendation": "Đối chiếu chức danh và trình độ chuyên môn/kỹ thuật; nếu không thuộc ngoại lệ quản lý doanh nghiệp, cần rút thời gian thử việc về mức phù hợp."
   },
   "presence_review_rules": [
     {

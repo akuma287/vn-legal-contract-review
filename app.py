@@ -169,11 +169,15 @@ HIGH_RISK_RULE_IDS = {
     "PIT2007-GROSS-NET-WITHHOLDING",
     "PDPD2023-EMPLOYEE-CUSTOMER-DATA",
     "BLLD2019-ART20-FIXED-TERM",
+    "BLLD2019-ART25-PROBATION-DURATION",
     "BLLD2019-ART21-WAGES",
     "BLLD2019-ART21-INSURANCE",
     "BLLD2019-OVERTIME",
     "BLLD2019-SALARY-DEDUCTIONS",
     "BLLD2019-TERMINATION-HANDOVER",
+}
+SUPPLEMENTAL_RULE_IDS = {
+    "BLLD2019-ART25-PROBATION-DURATION",
 }
 LOW_RISK_RULE_IDS = {
     "BASE-CONTRACT-LANGUAGE",
@@ -229,7 +233,7 @@ def calculate_contract_score(
         scored_rule_findings = [
             finding
             for finding in result.get("findings", [])
-            if finding.get("id") in visible_rule_ids
+            if finding.get("id") in visible_rule_ids or finding.get("id") in SUPPLEMENTAL_RULE_IDS
         ]
         if not scored_rule_findings:
             fallback_ai_deduction = len(ai_findings) * 6
@@ -750,6 +754,40 @@ def _findings_html(result: dict[str, Any]) -> str:
     )
 
 
+def _supplemental_findings_html(result: dict[str, Any], ai_review: dict[str, Any] | None) -> str:
+    if not ai_review:
+        return ""
+    cited_ids = {
+        citation_id
+        for finding in ai_review.get("findings", [])
+        for citation_id in finding.get("legal_basis_ids", [])
+    }
+    findings = [
+        finding
+        for finding in result.get("findings", [])
+        if finding.get("id") in SUPPLEMENTAL_RULE_IDS and finding.get("id") not in cited_ids
+    ]
+    if not findings:
+        return ""
+    cards = []
+    for finding in findings:
+        cards.append(
+            "<article class='finding card'>"
+            "<div class='finding-top'><span class='badge'>Cần kiểm tra</span></div>"
+            f"<h3>{html.escape(finding['title'])}</h3>"
+            f"<p>{html.escape(finding['evidence'])}</p>"
+            f"<p><b>Căn cứ:</b> {html.escape(finding['legal_basis'])}</p>"
+            f"<p><b>Gợi ý:</b> {html.escape(finding['recommendation'])}</p>"
+            "</article>"
+        )
+    return (
+        "<section class='panel'>"
+        "<div class='section-heading'><p>Rule engine bổ sung</p><h2>Điểm quan trọng AI chưa nêu</h2></div>"
+        f"{''.join(cards)}"
+        "</section>"
+    )
+
+
 def _ai_review_html(ai_review: dict[str, Any] | None, result: dict[str, Any]) -> str:
     if not ai_review:
         return ""
@@ -913,6 +951,7 @@ def render_report(
         f"<ul>{source_items}</ul>"
         "</section>"
         f"{_ai_review_html(ai_review, result)}"
+        f"{_supplemental_findings_html(result, ai_review)}"
         f"{_chat_html(session_id)}"
         "</main>",
     )

@@ -60,6 +60,40 @@ class ScreeningTests(unittest.TestCase):
             any(item["id"] == "BLLD2019-ART20-FIXED-TERM" for item in result["findings"])
         )
 
+    def test_probation_over_60_days_emits_review_finding(self):
+        result = screen_text(
+            "Thư mời làm việc. Vị trí Nhân viên vận hành bảo mật hệ thống. Thời gian thử việc 90 ngày."
+        )
+
+        finding = next(
+            item
+            for item in result["findings"]
+            if item["id"] == "BLLD2019-ART25-PROBATION-DURATION"
+        )
+        self.assertIn("90 ngày", finding["evidence"])
+
+    def test_ai_report_keeps_important_uncited_rule_engine_findings(self):
+        result = screen_text(
+            "Thư mời làm việc. Vị trí Nhân viên vận hành bảo mật hệ thống. Thời gian thử việc 90 ngày."
+        )
+        ai_review = {
+            "summary": "Sơ bộ.",
+            "findings": [{
+                "title": "Điểm khác",
+                "issue": "Cần đối chiếu.",
+                "suggested_revision": "Làm rõ điều khoản.",
+                "legal_basis_ids": [],
+                "missing_facts": [],
+            }],
+            "clarifying_questions": [],
+        }
+
+        html = render_report(result, "offer.docx", ai_review=ai_review)
+
+        self.assertIn("Rule engine bổ sung", html)
+        self.assertIn("thử việc 90 ngày", html)
+        self.assertEqual(calculate_contract_score(result, ai_review)["value"], 92)
+
     def test_result_does_not_contain_compliance_verdict(self):
         result = screen_text("Công việc: Kế toán")
 
