@@ -537,6 +537,64 @@ class AppTests(unittest.TestCase):
         self.assertEqual(len(result["findings"]), 1)
         self.assertNotIn("compliant", result["summary"].lower())
 
+    @patch("app.urlopen")
+    @patch.dict("os.environ", {"LEGAL_AI_API_KEY": "test-key"}, clear=False)
+    def test_ai_review_strips_cjk_text_from_provider_output(self, mocked_urlopen):
+        class Response:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                return False
+
+            def read(self):
+                return json.dumps(
+                    {
+                        "choices": [
+                            {
+                                "message": {
+                                    "content": json.dumps(
+                                        {
+                                            "summary": "Sàng lọc sơ bộ 合同风险.",
+                                            "findings": [
+                                                {
+                                                    "title": "Cần kiểm tra nguồn lực 支持资源",
+                                                    "issue": "Theo Điều 4.2.3, Bên B sẽ cung cấp哪些具体资源（培训小时数、样品数量、广告预算等） để hỗ trợ Bên A?",
+                                                    "risk_level": "review",
+                                                    "legal_basis_ids": ["BLLD2019-ART21-WAGES"],
+                                                    "missing_facts": ["资源 hỗ trợ"],
+                                                    "suggested_revision": "Bổ sung 清单资源 vào phụ lục.",
+                                                }
+                                            ],
+                                            "clarifying_questions": [
+                                                {
+                                                    "question": "Bên B sẽ cung cấp哪些具体资源 để hỗ trợ Bên A?",
+                                                    "clause_ref": "第4.2.3 Điều",
+                                                    "why_important": "Thiếu 资源 hỗ trợ.",
+                                                }
+                                            ],
+                                        },
+                                        ensure_ascii=False,
+                                    )
+                                }
+                            }
+                        ]
+                    },
+                    ensure_ascii=False,
+                ).encode()
+
+        mocked_urlopen.return_value = Response()
+        result = review_with_ai(
+            "Công việc: Kế toán",
+            screen_text("Công việc: Kế toán"),
+            consent=True,
+        )
+
+        dumped = json.dumps(result, ensure_ascii=False)
+        self.assertNotRegex(dumped, r"[\u3400-\u9fff]")
+        self.assertIn("Theo Điều 4.2.3", result["findings"][0]["issue"])
+        self.assertIn("Bên B sẽ cung cấp", result["clarifying_questions"][0]["question"])
+
     def test_ai_review_persists_clarifying_questions(self):
         class Response:
             def __enter__(self):
@@ -645,6 +703,8 @@ class AppTests(unittest.TestCase):
         self.assertIn("Đề xuất chỉnh sửa", body)
         self.assertIn("Không coi placeholder PII", body)
         self.assertIn("{{PERSON_NAME_", body)
+        self.assertIn("Chỉ viết tiếng Việt", body)
+        self.assertIn("không dùng tiếng Trung", body)
 
     def test_ai_review_without_clarifying_questions_renders_no_section(self):
         result = {
@@ -767,6 +827,7 @@ class AppTests(unittest.TestCase):
         self.assertIn("Cần kiểm tra", answer)
         self.assertNotIn("0901234567", captured["body"])
         self.assertIn("PHONE_NUMBER", captured["body"])
+        self.assertIn("Chỉ viết tiếng Việt", captured["body"])
 
 
 if __name__ == "__main__":
