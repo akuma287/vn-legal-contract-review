@@ -294,6 +294,39 @@ class AppTests(unittest.TestCase):
         self.assertEqual(score["deduction"], 8)
         self.assertIn("bỏ qua 2 finding do dữ liệu PII đã được masking", score["explanation"])
 
+    def test_contract_score_with_ai_uses_visible_ai_findings_not_hidden_rule_count(self):
+        result = {
+            "findings": [
+                {"id": "BASE-CONTRACT-PAYMENT", "missing_facts": []},
+                {"id": "BASE-CONTRACT-LIABILITY-CAP", "missing_facts": []},
+                {"id": "BASE-CONTRACT-TERMINATION", "missing_facts": []},
+                {"id": "BASE-CONTRACT-DISPUTE", "missing_facts": []},
+                {"id": "BLLD2019-ART21-WAGES", "missing_facts": []},
+                {"id": "BLLD2019-ART21-INSURANCE", "missing_facts": []},
+                {"id": "PDPD2023-EMPLOYEE-CUSTOMER-DATA", "missing_facts": []},
+                {"id": "BHXH2024-COMPULSORY-WAGE-BASE", "missing_facts": []},
+                {"id": "PIT2007-GROSS-NET-WITHHOLDING", "missing_facts": []},
+                {"id": "SERVICE-CONTRACT-DATA-SECURITY", "missing_facts": []},
+                {"id": "COOP-CONTRACT-DEADLOCK", "missing_facts": []},
+                {"id": "BASE-CONTRACT-IP-OWNERSHIP", "missing_facts": []},
+                {"id": "BLLD2019-OVERTIME", "missing_facts": []},
+            ]
+        }
+        ai_review = {
+            "summary": "Sơ bộ.",
+            "findings": [
+                {"legal_basis_ids": ["BHXH2024-COMPULSORY-WAGE-BASE"]},
+                {"legal_basis_ids": ["BHXH2024-COMPULSORY-WAGE-BASE", "BLLD2019-OVERTIME"]},
+            ],
+            "clarifying_questions": [{}, {}, {}, {}],
+        }
+
+        score = calculate_contract_score(result, ai_review)
+
+        self.assertEqual(score["deduction"], 16)
+        self.assertEqual(score["value"], 84)
+        self.assertIn("2 AI finding hiển thị", score["explanation"])
+
     def test_report_shows_contract_score_and_human_decision_disclaimer(self):
         ai_review = {"summary": "OK", "findings": [], "clarifying_questions": []}
         html = render_report(screen_text("Công việc: Kế toán"), "contract.txt", ai_review=ai_review)

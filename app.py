@@ -171,6 +171,8 @@ HIGH_RISK_RULE_IDS = {
     "BLLD2019-ART20-FIXED-TERM",
     "BLLD2019-ART21-WAGES",
     "BLLD2019-ART21-INSURANCE",
+    "BLLD2019-OVERTIME",
+    "BLLD2019-SALARY-DEDUCTIONS",
     "BLLD2019-TERMINATION-HANDOVER",
 }
 LOW_RISK_RULE_IDS = {
@@ -215,14 +217,32 @@ def calculate_contract_score(
     contract_text: str = "",
 ) -> dict[str, Any]:
     ignored = 0
-    deduction = 0
-    for finding in result.get("findings", []):
+    ai_findings = (ai_review or {}).get("findings", [])
+    fallback_ai_deduction = 0
+    if ai_findings:
+        visible_rule_ids = {
+            citation_id
+            for finding in ai_findings
+            for citation_id in finding.get("legal_basis_ids", [])
+            if isinstance(citation_id, str)
+        }
+        scored_rule_findings = [
+            finding
+            for finding in result.get("findings", [])
+            if finding.get("id") in visible_rule_ids
+        ]
+        if not scored_rule_findings:
+            fallback_ai_deduction = len(ai_findings) * 6
+    else:
+        scored_rule_findings = result.get("findings", [])
+
+    deduction = fallback_ai_deduction
+    for finding in scored_rule_findings:
         if contract_text and _finding_is_satisfied_by_masked_pii(finding, contract_text):
             ignored += 1
             continue
         deduction += _rule_weight(finding)
-    ai_count = len((ai_review or {}).get("findings", []))
-    deduction += ai_count * 6
+    ai_count = len(ai_findings)
     score = max(0, 100 - deduction)
     if score >= 85:
         level = "Tốt"
@@ -236,7 +256,10 @@ def calculate_contract_score(
     else:
         level = "Rủi ro cao"
         summary = "Quá nhiều điểm cần kiểm tra; chưa nên ký nếu chưa rà soát lại."
-    explanation = f"Trừ {deduction} weighted risk từ rule engine và {ai_count} AI finding."
+    if ai_findings:
+        explanation = f"Trừ {deduction} weighted risk từ {ai_count} AI finding hiển thị."
+    else:
+        explanation = f"Trừ {deduction} weighted risk từ rule engine."
     if ignored:
         explanation += f" Đã bỏ qua {ignored} finding do dữ liệu PII đã được masking."
     return {
