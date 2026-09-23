@@ -251,7 +251,48 @@ class AppTests(unittest.TestCase):
         self.assertLess(score["value"], 100)
         self.assertGreaterEqual(score["value"], 0)
         self.assertIn(score["level"], {"Tốt", "Tạm chấp nhận", "Cần rà soát kỹ", "Rủi ro cao"})
-        self.assertIn("finding", score["explanation"])
+        self.assertIn("weighted risk", score["explanation"])
+
+    def test_contract_score_weights_high_risk_rules_more_than_admin_rules(self):
+        result = {
+            "findings": [
+                {"id": "BASE-CONTRACT-LIABILITY-CAP", "title": "Cần kiểm tra giới hạn trách nhiệm", "missing_facts": []},
+                {"id": "BASE-CONTRACT-PAYMENT", "title": "Cần kiểm tra thanh toán", "missing_facts": []},
+                {"id": "BASE-CONTRACT-LANGUAGE", "title": "Cần kiểm tra ngôn ngữ", "missing_facts": []},
+            ]
+        }
+
+        score = calculate_contract_score(result)
+
+        self.assertEqual(score["deduction"], 19)
+        self.assertIn("weighted risk từ rule engine", score["explanation"])
+
+    def test_contract_score_ignores_findings_satisfied_by_pii_placeholders(self):
+        result = {
+            "findings": [
+                {
+                    "id": "BASE-CONTRACT-PARTIES-AUTHORITY",
+                    "title": "Cần kiểm tra chủ thể và thẩm quyền ký",
+                    "missing_facts": ["Thông tin định danh các bên"],
+                },
+                {
+                    "id": "BASE-CONTRACT-NOTICES",
+                    "title": "Cần kiểm tra thông báo và đầu mối liên hệ",
+                    "missing_facts": ["Kênh gửi thông báo"],
+                },
+                {
+                    "id": "BASE-CONTRACT-PAYMENT",
+                    "title": "Cần kiểm tra thanh toán",
+                    "missing_facts": [],
+                },
+            ]
+        }
+        contract_text = "Bên A {{PERSON_NAME_1}}, địa chỉ {{ADDRESS_1}}, MST {{TAX_ID_1}}, email {{EMAIL_ADDRESS_1}}."
+
+        score = calculate_contract_score(result, contract_text=contract_text)
+
+        self.assertEqual(score["deduction"], 8)
+        self.assertIn("bỏ qua 2 finding do dữ liệu PII đã được masking", score["explanation"])
 
     def test_report_shows_contract_score_and_human_decision_disclaimer(self):
         ai_review = {"summary": "OK", "findings": [], "clarifying_questions": []}

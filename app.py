@@ -153,13 +153,77 @@ def _pdf_text(value: object) -> str:
     return html.escape(str(value or "")).replace("\n", "<br/>")
 
 
+HIGH_RISK_RULE_IDS = {
+    "BASE-CONTRACT-PAYMENT",
+    "BASE-CONTRACT-LIABILITY-CAP",
+    "BASE-CONTRACT-TERMINATION",
+    "BASE-CONTRACT-DISPUTE",
+    "BASE-CONTRACT-IP-OWNERSHIP",
+    "SERVICE-CONTRACT-DATA-SECURITY",
+    "SERVICE-CONTRACT-SERVICE-CREDITS",
+    "SERVICE-CONTRACT-EXIT-HANDOVER",
+    "COOP-CONTRACT-PROFIT-SHARING",
+    "COOP-CONTRACT-EXIT",
+    "COOP-CONTRACT-DEADLOCK",
+    "BHXH2024-COMPULSORY-WAGE-BASE",
+    "PIT2007-GROSS-NET-WITHHOLDING",
+    "PDPD2023-EMPLOYEE-CUSTOMER-DATA",
+    "BLLD2019-ART20-FIXED-TERM",
+    "BLLD2019-ART21-WAGES",
+    "BLLD2019-ART21-INSURANCE",
+    "BLLD2019-TERMINATION-HANDOVER",
+}
+LOW_RISK_RULE_IDS = {
+    "BASE-CONTRACT-LANGUAGE",
+    "BASE-CONTRACT-DOCUMENT-ORDER",
+    "BASE-CONTRACT-AMENDMENT",
+    "BLLD2019-ART21-PAY-RAISE",
+    "BLLD2019-ART21-TRAINING",
+}
+MASKED_PII_RULE_IDS = {
+    "BASE-CONTRACT-PARTIES-AUTHORITY",
+    "BASE-CONTRACT-NOTICES",
+    "BLLD2019-ART21-EMPLOYER",
+    "BLLD2019-ART21-EMPLOYEE",
+    "BLLD2019-ART21-WORKPLACE",
+}
+
+
+def _rule_weight(finding: dict[str, Any]) -> int:
+    rule_id = str(finding.get("id", ""))
+    if rule_id in HIGH_RISK_RULE_IDS:
+        return 8
+    if rule_id in LOW_RISK_RULE_IDS:
+        return 3
+    return 5
+
+
+def _finding_is_satisfied_by_masked_pii(finding: dict[str, Any], contract_text: str) -> bool:
+    if str(finding.get("id", "")) not in MASKED_PII_RULE_IDS:
+        return False
+    missing = " ".join(str(item) for item in finding.get("missing_facts", []))
+    need_contact = any(term in missing.casefold() for term in ("địa chỉ", "liên hệ", "email"))
+    has_identity = bool(re.search(r"\{\{(?:PERSON_NAME|VN_CCCD|TAX_ID)_\d+\}\}", contract_text, re.IGNORECASE))
+    has_contact = bool(re.search(r"\{\{(?:ADDRESS|PHONE_NUMBER|EMAIL_ADDRESS)_\d+\}\}", contract_text, re.IGNORECASE))
+    return has_identity and (has_contact or not need_contact)
+
+
 def calculate_contract_score(
     result: dict[str, Any],
     ai_review: dict[str, Any] | None = None,
+    *,
+    contract_text: str = "",
 ) -> dict[str, Any]:
-    rule_count = len(result.get("findings", []))
+    ignored = 0
+    deduction = 0
+    for finding in result.get("findings", []):
+        if contract_text and _finding_is_satisfied_by_masked_pii(finding, contract_text):
+            ignored += 1
+            continue
+        deduction += _rule_weight(finding)
     ai_count = len((ai_review or {}).get("findings", []))
-    score = max(0, 100 - rule_count * 4 - ai_count * 6)
+    deduction += ai_count * 6
+    score = max(0, 100 - deduction)
     if score >= 85:
         level = "Tốt"
         summary = "Ít điểm cần kiểm tra; vẫn cần đọc lại trước khi ký."
@@ -172,11 +236,16 @@ def calculate_contract_score(
     else:
         level = "Rủi ro cao"
         summary = "Quá nhiều điểm cần kiểm tra; chưa nên ký nếu chưa rà soát lại."
+    explanation = f"Trừ {deduction} weighted risk từ rule engine và {ai_count} AI finding."
+    if ignored:
+        explanation += f" Đã bỏ qua {ignored} finding do dữ liệu PII đã được masking."
     return {
         "value": score,
         "level": level,
         "summary": summary,
-        "explanation": f"Trừ điểm từ {rule_count} rule-engine finding và {ai_count} AI finding.",
+        "deduction": deduction,
+        "ignored_masked_pii_findings": ignored,
+        "explanation": explanation,
     }
 
 
@@ -197,6 +266,7 @@ def make_report_pdf(
     result: dict[str, Any],
     filename: str,
     ai_review: dict[str, Any] | None = None,
+    contract_text: str = "",
 ) -> bytes:
     """Build a simple text PDF report; not a pixel clone of the web UI."""
     stream = BytesIO()
@@ -208,7 +278,7 @@ def make_report_pdf(
     heading.fontName = PDF_FONT
     heading.textColor = colors.HexColor("#5f2e18")
     styles["Title"].fontName = PDF_FONT
-    score = calculate_contract_score(result, ai_review)
+    score = calculate_contract_score(result, ai_review, contract_text=contract_text)
     story: list[Any] = [Paragraph("Kết quả rà soát sơ bộ", styles["Title"])]
     story.append(Paragraph(f"Tệp: {_pdf_text(filename)}", normal))
     story.append(Paragraph(f"Điểm tổng quan: {score['value']}/100 — {_pdf_text(score['level'])}", heading))
@@ -258,8 +328,9 @@ def _pdf_download_link(
     result: dict[str, Any],
     filename: str,
     ai_review: dict[str, Any] | None,
+    contract_text: str = "",
 ) -> str:
-    encoded = base64.b64encode(make_report_pdf(result, filename, ai_review)).decode("ascii")
+    encoded = base64.b64encode(make_report_pdf(result, filename, ai_review, contract_text)).decode("ascii")
     return (
         "<a class='button-link' download='contract-review-report.pdf' "
         f"href='data:application/pdf;base64,{encoded}'>Tải báo cáo PDF</a>"
@@ -735,6 +806,7 @@ def render_chat_page(session_id: str) -> str:
         session["filename"],
         ai_review=session["ai_review"],
         session_id=session_id,
+        contract_text=session["contract_text"],
     )
 
 
@@ -750,6 +822,7 @@ def render_ai_job_page(job_id: str) -> str:
             job["filename"],
             ai_review=job["ai_review"],
             session_id=job.get("session_id") or None,
+            contract_text=job["contract_text"],
         )
     if job["status"] == "error":
         error = html.escape(job.get("error") or "AI review không hoàn tất.")
@@ -757,6 +830,7 @@ def render_ai_job_page(job_id: str) -> str:
             job["result"],
             job["filename"],
             error_html=f"<p class='error'><b>AI review lỗi:</b> {error}</p><p>Kết quả rule engine vẫn dùng được.</p>",
+            contract_text=job["contract_text"],
         )
     return _page(
         "Đang rà soát bằng AI",
@@ -778,12 +852,13 @@ def render_report(
     ai_review: dict[str, Any] | None = None,
     session_id: str | None = None,
     error_html: str = "",
+    contract_text: str = "",
 ) -> str:
     """Render findings with escaping; never render contract content."""
     sources = result.get("sources", [result["source"]])
     finding_count = len(result["findings"])
     ai_count = len(ai_review["findings"]) if ai_review else 0
-    score = calculate_contract_score(result, ai_review)
+    score = calculate_contract_score(result, ai_review, contract_text=contract_text)
     source_items = "".join(
         "<li>"
         f"{html.escape(source['instrument'])} ({html.escape(source['number'])}), "
@@ -800,7 +875,7 @@ def render_report(
         "<p class='eyebrow'>Báo cáo cục bộ</p>"
         "<h1>Kết quả rà soát sơ bộ</h1>"
         f"<p class='lead'><b>Tệp:</b> {html.escape(filename)}</p>"
-        f"<p>{_pdf_download_link(result, filename, ai_review)}</p>"
+        f"<p>{_pdf_download_link(result, filename, ai_review, contract_text)}</p>"
         "<div class='stats'>"
         f"<div><b>{finding_count}</b><span>điểm rule engine</span></div>"
         f"<div><b>{ai_count}</b><span>điểm AI bổ sung</span></div>"
@@ -947,7 +1022,7 @@ class ScreeningHandler(BaseHTTPRequestHandler):
                 job_id = start_ai_review_job(filename, contract_text, result)
                 self._send_html(303, render_ai_job_page(job_id), location=f"/job?id={job_id}")
                 return
-            self._send_html(200, render_report(result, filename))
+            self._send_html(200, render_report(result, filename, contract_text=contract_text))
         except (PermissionError, RuntimeError, ValueError) as error:
             self._send_html(400, render_home(str(error)))
 
