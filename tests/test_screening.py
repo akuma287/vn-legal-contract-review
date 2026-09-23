@@ -12,6 +12,7 @@ from app import (
     ScreeningHandler,
     _create_ai_job_record,
     _run_ai_review_job,
+    _validate_ai_review,
     calculate_contract_score,
     chat_with_ai,
     create_chat_session,
@@ -278,14 +279,42 @@ class AppTests(unittest.TestCase):
         self.assertIn("tham khảo", html)
         self.assertIn("mọi quyết định vẫn là CON NGƯỜI", html)
 
-    def test_contract_score_penalizes_rule_and_ai_findings(self):
+    def test_contract_score_uses_validated_ai_score(self):
         result = screen_text("Hợp đồng dịch vụ. Bên B cung cấp dịch vụ vận hành website cho Bên A.")
-        score = calculate_contract_score(result, {"summary": "OK", "findings": [{}, {}]})
+        ai_review = {
+            "summary": "OK",
+            "findings": [{}, {}],
+            "overall_score": 73,
+            "score_reason": "Có rủi ro thanh toán cần làm rõ.",
+        }
 
-        self.assertLess(score["value"], 100)
-        self.assertGreaterEqual(score["value"], 0)
-        self.assertIn(score["level"], {"Tốt", "Tạm chấp nhận", "Cần rà soát kỹ", "Rủi ro cao"})
-        self.assertIn("weighted risk", score["explanation"])
+        score = calculate_contract_score(result, ai_review)
+
+        self.assertEqual(score["value"], 73)
+        self.assertEqual(score["level"], "Tạm chấp nhận")
+        self.assertEqual(score["explanation"], "AI: Có rủi ro thanh toán cần làm rõ.")
+
+    def test_ai_review_validates_score_and_reason(self):
+        review = _validate_ai_review(
+            {
+                "summary": "Sơ bộ.",
+                "overall_score": 82,
+                "score_reason": "Quyền và nghĩa vụ khá rõ nhưng còn điểm cần đối chiếu.",
+                "findings": [],
+                "clarifying_questions": [],
+            },
+            {},
+        )
+
+        self.assertEqual(review["overall_score"], 82)
+        self.assertIn("còn điểm cần đối chiếu", review["score_reason"])
+
+    def test_ai_review_rejects_invalid_score(self):
+        with self.assertRaisesRegex(ValueError, "overall_score"):
+            _validate_ai_review(
+                {"summary": "Sơ bộ.", "overall_score": 120, "findings": []},
+                {},
+            )
 
     def test_contract_score_weights_high_risk_rules_more_than_admin_rules(self):
         result = {
