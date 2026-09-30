@@ -420,6 +420,15 @@ class AppTests(unittest.TestCase):
         self.assertIn("trước khi gửi đến AI", home)
         self.assertNotIn("Authorization key", home)
 
+    def test_review_button_requires_ai_consent(self):
+        home = render_home()
+
+        self.assertIn("id='ai-consent'", home)
+        self.assertIn("required name='ai_consent'", home)
+        self.assertIn("id='review-submit'", home)
+        self.assertIn("<button id='review-submit' type='submit' disabled>Rà soát</button>", home)
+        self.assertIn("button.disabled=!consent.checked", home)
+
     def test_home_shows_loading_overlay_after_submit(self):
         home = render_home()
         self.assertIn("id='loading-overlay'", home)
@@ -517,6 +526,35 @@ class AppTests(unittest.TestCase):
         self.assertIn("download='contract-review-report.pdf'", html)
         self.assertIn("data:application/pdf;base64,", html)
         self.assertIn("Tải báo cáo PDF", html)
+
+    def test_screen_without_ai_consent_is_rejected(self):
+        body = (
+            b"--x\r\n"
+            b"Content-Disposition: form-data; name=\"contract\"; filename=\"contract.txt\"\r\n"
+            b"Content-Type: text/plain\r\n\r\n"
+            b"Cong viec: Ke toan\r\n"
+            b"--x--\r\n"
+        )
+        sent: dict[str, object] = {"headers": {}}
+
+        class Handler(ScreeningHandler):
+            def send_response(self, code, message=None): sent["status"] = code
+            def send_header(self, keyword, value): sent["headers"][keyword] = value
+            def end_headers(self): pass
+
+        handler = object.__new__(Handler)
+        handler.headers = {
+            "Content-Length": str(len(body)),
+            "Content-Type": "multipart/form-data; boundary=x",
+            "Host": "127.0.0.1:8000",
+        }
+        handler.rfile = BytesIO(body)
+        handler.wfile = BytesIO()
+
+        handler._handle_screen()
+
+        self.assertEqual(sent["status"], 400)
+        self.assertIn("Dùng AI review sơ bộ", handler.wfile.getvalue().decode("utf-8"))
 
     def test_screen_with_ai_consent_redirects_to_background_job(self):
         body = (
